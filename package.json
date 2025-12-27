@@ -1,0 +1,20 @@
+{
+  "name": "web-store-project-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server/index.js",
+    "build": "cd client && npm install && npm run build",
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "dev": "npx concurrently \"npm run start\" \"cd client && npm run dev\""
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "@supabase/supabase-js": "^2.89.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
