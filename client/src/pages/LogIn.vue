@@ -58,9 +58,7 @@ const handleLogin = async () => {
   error.value = ''
 
   try {
-    // CHANGE: Removed 'http://localhost:3000'
-    // Now it works on both your local computer AND Vercel
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch('http://localhost:3000/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email.value, password: password.value })
@@ -69,12 +67,14 @@ const handleLogin = async () => {
     const data = await res.json()
     if (!res.ok) throw new Error(data.error)
 
+    // Save session data to localStorage
     localStorage.setItem('userSession', JSON.stringify({
-      username: data.user.username,
-      role: data.user.role,
-      token: Date.now()
+    username: data.user.username,
+    role: data.user.role,
+    token: Date.now() // Simple session key/timestamp
     }));
 
+    // ROLE-BASED REDIRECTION LOGIC
     if (data.user.role === 'admin') {
       router.push('/admin-dashboard')
     } else {
