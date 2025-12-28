@@ -20,26 +20,49 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { createClient } from '@supabase/supabase-js'
+// 1. Import your existing client instead of creating a new one
+import { supabase } from '../supabaseClient.js'
 
-const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 const router = useRouter()
 const newPassword = ref('')
 const loading = ref(false)
 const message = ref('')
+const isError = ref(false)
+
+// 2. Check if the user is actually authorized to be here
+onMounted(async () => {
+  const { data, error } = await supabase.auth.getSession()
+  if (error || !data.session) {
+    message.value = "Session expired or invalid link. Please request a new reset email."
+    isError.value = true
+  }
+})
 
 const updatePassword = async () => {
   loading.value = true
-  const { error } = await supabase.auth.updateUser({ password: newPassword.value })
+  message.value = ''
+  isError.value = false
 
-  if (error) {
-    message.value = error.message
-  } else {
+  try {
+    // 3. Update the user's password in Supabase
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword.value
+    })
+
+    if (error) throw error
+
     message.value = "Password updated! Redirecting to login..."
-    setTimeout(() => router.push('/login'), 2000)
+    setTimeout(() => {
+      router.push('/login')
+    }, 2000)
+
+  } catch (error) {
+    message.value = error.message
+    isError.value = true
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 </script>
