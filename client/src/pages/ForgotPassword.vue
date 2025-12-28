@@ -60,13 +60,9 @@ const handleResetRequest = async () => {
       return
     }
 
-    // 3. DYNAMIC REDIRECT URL
-    // window.location.origin detects if you are on localhost:5173 or render.com
-    const siteUrl = window.location.origin;
-
     // 4. Send Reset Link via Supabase Auth
     const { error: authError } = await supabase.auth.resetPasswordForEmail(email.value, {
-      redirectTo: `${siteUrl}/reset-password`,
+      redirectTo: 'https://web-store-project-vdfv.onrender.com/reset-password',
     })
 
     if (authError) throw authError
