@@ -53,12 +53,18 @@ const showPassword = ref(false)
 const loading = ref(false)
 const error = ref('')
 
+// 1. DYNAMIC API URL
+// Locally: uses http://localhost:3000
+// On Render: uses the VITE_API_URL you set in the dashboard
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 const handleLogin = async () => {
   loading.value = true
   error.value = ''
 
   try {
-    const res = await fetch('http://localhost:3000/api/auth/login', {
+    // 2. USE THE API_BASE VARIABLE
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email.value, password: password.value })
@@ -67,14 +73,12 @@ const handleLogin = async () => {
     const data = await res.json()
     if (!res.ok) throw new Error(data.error)
 
-    // Save session data to localStorage
     localStorage.setItem('userSession', JSON.stringify({
-    username: data.user.username,
-    role: data.user.role,
-    token: Date.now() // Simple session key/timestamp
+      username: data.user.username,
+      role: data.user.role,
+      token: Date.now()
     }));
 
-    // ROLE-BASED REDIRECTION LOGIC
     if (data.user.role === 'admin') {
       router.push('/admin-dashboard')
     } else {
