@@ -29,9 +29,10 @@
 
 <script setup>
 import { ref } from 'vue'
-import { createClient } from '@supabase/supabase-js'
+// 1. Import your existing client from your dedicated file
+// This ensures VITE_ variables are handled in one place
+import { supabase } from '../supabaseClient'
 
-const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 const email = ref('')
 const loading = ref(false)
 const message = ref('')
@@ -42,31 +43,41 @@ const handleResetRequest = async () => {
   message.value = ''
   isError.value = false
 
-  // 1. Check if email exists in your local DB
-  const { data: userExists } = await supabase
-    .from('accounts')
-    .select('email')
-    .eq('email', email.value)
-    .maybeSingle()
+  try {
+    // 2. Check if email exists in your 'accounts' table
+    const { data: userExists, error: dbError } = await supabase
+      .from('accounts')
+      .select('email')
+      .eq('email', email.value)
+      .maybeSingle()
 
-  if (!userExists) {
-    isError.value = true
-    message.value = "This email is not registered."
-    loading.value = false
-    return
-  }
+    if (dbError) throw dbError
 
-  // 2. Send Reset Link via Supabase Auth
-  const { error } = await supabase.auth.resetPasswordForEmail(email.value, {
-    redirectTo: 'http://localhost:5173/reset-password',
-  })
+    if (!userExists) {
+      isError.value = true
+      message.value = "This email is not registered."
+      loading.value = false
+      return
+    }
 
-  if (error) {
-    isError.value = true
-    message.value = error.message
-  } else {
+    // 3. DYNAMIC REDIRECT URL
+    // window.location.origin detects if you are on localhost:5173 or render.com
+    const siteUrl = window.location.origin;
+
+    // 4. Send Reset Link via Supabase Auth
+    const { error: authError } = await supabase.auth.resetPasswordForEmail(email.value, {
+      redirectTo: `${siteUrl}/reset-password`,
+    })
+
+    if (authError) throw authError
+
     message.value = "Reset link sent! Please check your Gmail."
+
+  } catch (err) {
+    isError.value = true
+    message.value = err.message
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 </script>
