@@ -66,7 +66,7 @@ const handleResetRequest = async () => {
 
     // 4. Send Reset Link via Supabase Auth
     const { error: authError } = await supabase.auth.resetPasswordForEmail(email.value, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${siteUrl}/reset-password`,
     })
 
     if (authError) throw authError
