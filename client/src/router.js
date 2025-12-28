@@ -35,20 +35,24 @@ router.beforeEach((to, from, next) => {
   const session = localStorage.getItem('userSession');
   const userData = session ? JSON.parse(session) : null;
 
-  /**
-   * 1. IMPROVED LOGOUT LOGIC
-   * We remove the 'confirm()' popup.
-   * If a user is on a dashboard and goes to login, we allow it.
-   * Your AdminLayout.vue will handle the 'Are you sure?' part with its nice modal.
-   */
-  if (to.path === '/login' && session) {
-    // If we are navigating to login, we just let it happen.
-    // The actual removal of localStorage happens in your AdminLayout confirmLogout function.
-    next();
-    return;
+  // 1. PUBLIC PATHS
+  // These routes can be accessed by ANYONE (even without a session).
+  // This is crucial for the password reset link to work.
+  const publicPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];
+
+  // 2. PREVENT LOGGED-IN USERS FROM GOING TO LOGIN/SIGNUP/FORGOT/RESET
+  // If they are already logged in, send them to their respective home.
+  if (publicPaths.includes(to.path) && userData) {
+    if (userData.role === 'admin') return next('/admin-dashboard');
+    return next('/user-home');
   }
 
-  // 2. PROTECTION LOGIC (URLs)
+  // If it's a public path and they aren't logged in, let them through!
+  if (publicPaths.includes(to.path)) {
+    return next();
+  }
+
+  // 3. PROTECTION LOGIC (URLs for Logged-in Users)
   const adminPaths = ['/admin-dashboard', '/inventory', '/stock-in', '/stock-out', '/gcash-atm', '/lending-list'];
 
   if (adminPaths.includes(to.path)) {
@@ -65,12 +69,6 @@ router.beforeEach((to, from, next) => {
   if (to.path === '/user-home' && !userData) {
     alert("Please login first.");
     return next('/login');
-  }
-
-  // 3. PREVENT LOGGED-IN USERS FROM GOING TO LOGIN/SIGNUP
-  if ((to.path === '/login' || to.path === '/signup') && userData) {
-    if (userData.role === 'admin') return next('/admin-dashboard');
-    return next('/user-home');
   }
 
   next();
