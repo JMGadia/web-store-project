@@ -6,7 +6,6 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
       <div class="bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-sm hover:border-violet-500/50 transition-all group">
         <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Store Sales</p>
         <div class="flex items-end justify-between mb-4">
@@ -110,32 +109,26 @@
         </div>
 
         <div class="flex flex-col md:flex-row items-center justify-around gap-10">
-          <div class="relative w-56 h-56 rounded-full transition-all duration-500 group-hover:scale-110 shadow-[0_0_50px_rgba(16,185,129,0.15)] border-4 border-slate-800 overflow-hidden"
-               style="background: conic-gradient(#10b981 0% 55%, #475569 55% 100%);">
+          <div v-if="yearlySales.length" class="relative w-56 h-56 rounded-full transition-all duration-500 group-hover:scale-110 shadow-[0_0_50px_rgba(16,185,129,0.15)] border-4 border-slate-800 overflow-hidden"
+               :style="{ background: `conic-gradient(#10b981 0% ${yearlySales[0].percent}%, #475569 ${yearlySales[0].percent}% 100%)` }">
             <div class="absolute top-[25%] left-[60%] -translate-x-1/2 text-center pointer-events-none">
-              <p class="text-[10px] font-black text-white drop-shadow-md italic">₱450k</p>
-              <p class="text-[8px] font-bold text-emerald-100 uppercase">2024</p>
+              <p class="text-[10px] font-black text-white drop-shadow-md italic">₱{{ yearlySales[0].val }}</p>
+              <p class="text-[8px] font-bold text-emerald-100 uppercase">{{ yearlySales[0].year }}</p>
             </div>
             <div class="absolute bottom-[25%] left-[20%] text-center pointer-events-none">
-              <p class="text-[10px] font-black text-white drop-shadow-md italic">₱380k</p>
-              <p class="text-[8px] font-bold text-slate-300 uppercase">2023</p>
+              <p class="text-[10px] font-black text-white drop-shadow-md italic">₱{{ yearlySales[1].val }}</p>
+              <p class="text-[8px] font-bold text-slate-300 uppercase">{{ yearlySales[1].year }}</p>
             </div>
           </div>
 
           <div class="space-y-4">
-            <div class="p-4 rounded-2xl bg-slate-950/50 border border-slate-800 group-hover:border-emerald-500/50 transition-all">
+            <div v-for="(year, idx) in yearlySales" :key="idx"
+                 :class="['p-4 rounded-2xl bg-slate-950/50 border border-slate-800 transition-all', idx === 0 ? 'group-hover:border-emerald-500/50' : 'group-hover:border-slate-500/50']">
               <div class="flex items-center space-x-3">
-                <div class="w-3 h-3 rounded-sm bg-emerald-500"></div>
-                <span class="text-xs font-black text-white uppercase italic">Current Year</span>
+                <div :class="['w-3 h-3 rounded-sm', idx === 0 ? 'bg-emerald-500' : 'bg-slate-600']"></div>
+                <span class="text-xs font-black text-white uppercase italic">{{ idx === 0 ? 'Current Year' : 'Last Year' }}</span>
               </div>
-              <p class="text-xl font-bold text-emerald-400 mt-1">55%</p>
-            </div>
-            <div class="p-4 rounded-2xl bg-slate-950/50 border border-slate-800 group-hover:border-slate-500/50 transition-all">
-              <div class="flex items-center space-x-3">
-                <div class="w-3 h-3 rounded-sm bg-slate-600"></div>
-                <span class="text-xs font-black text-white uppercase italic">Last Year</span>
-              </div>
-              <p class="text-xl font-bold text-slate-500 mt-1">45%</p>
+              <p :class="['text-xl font-bold mt-1', idx === 0 ? 'text-emerald-400' : 'text-slate-500']">{{ year.percent }}%</p>
             </div>
           </div>
         </div>
@@ -148,10 +141,12 @@
           <h3 class="text-lg font-black text-white tracking-tight bold uppercase">Products Trend</h3>
         </div>
         <div class="flex items-end justify-around h-48 space-x-2">
-          <div v-for="(h, i) in [40, 90, 65, 80, 30, 100, 55, 55]" :key="i" class="w-full max-w-[40px] bg-gradient-to-t from-violet-600 to-indigo-500 rounded-t-lg transition-all hover:brightness-125 hover:scale-105 cursor-pointer" :style="{ height: h + '%' }"></div>
+          <div v-for="(item, i) in productTrend" :key="i"
+               class="w-full max-w-[40px] bg-gradient-to-t from-violet-600 to-indigo-500 rounded-t-lg transition-all hover:brightness-125 hover:scale-105 cursor-pointer"
+               :style="{ height: item.h + '%' }"></div>
         </div>
         <div class="flex justify-around mt-4 text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
-          <span>Rice</span><span>Eggs</span><span>Coffee</span><span>Canned</span><span>Soda</span><span>Bread</span><span>Snacks</span><span>ICE CREAM</span>
+          <span v-for="(item, i) in productTrend" :key="i">{{ item.name }}</span>
         </div>
       </section>
     </div>
@@ -159,54 +154,70 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-// Update this path to where your actual Supabase client file is located
+import { ref, onMounted, onUnmounted } from 'vue'
 import { supabase } from '../supabaseClient.js'
 import AdminLayout from '../pages/components/AdminLayout.vue'
 
-// Reactive state for database values
+// Reactive state
+const loading = ref(true)
 const stats = ref({
-  store_sales: 0,
-  store_capital: 0,
-  gcash_atm_sales: 0,
-  gcash_atm_capital: 0,
-  total_stocks: 0,
-  paid_count: 0,
-  unpaid_count: 0,
-  total_accumulate: 0
+  store_sales: 0, store_capital: 0, gcash_atm_sales: 0, gcash_atm_capital: 0,
+  total_stocks: 0, paid_count: 0, unpaid_count: 0, total_accumulate: 0
 })
 
-const loading = ref(true)
+const monthlyData = ref([])
+const yearlySales = ref([])
+const productTrend = ref([])
 
-// Static data for Monthly Chart (for now)
-const monthlyData = ref([
-  {m: 'JAN', h: '25%', val: '250K'}, {m: 'FEB', h: '30%', val: '300K'},
-  {m: 'MAR', h: '45%', val: '450K'}, {m: 'APR', h: '40%', val: '400K'},
-  {m: 'MAY', h: '55%', val: '550K'}, {m: 'JUN', h: '60%', val: '600K'},
-  {m: 'JUL', h: '75%', val: '750K'}, {m: 'AUG', h: '70%', val: '700K'},
-  {m: 'SEP', h: '85%', val: '850K'}, {m: 'OCT', h: '90%', val: '900K'},
-  {m: 'NOV', h: '100%', val: '1.0M'}, {m: 'DEC', h: '42%', val: '421K'}
-])
-
-const fetchStats = async () => {
+// 1. Function to fetch initial data
+const fetchData = async () => {
   try {
-    const { data, error } = await supabase
-      .from('stat_cards')
-      .select('*')
-      .limit(1)
-      .single()
+    const { data: statData } = await supabase.from('stat_cards').select('*').limit(1).single()
+    if (statData) stats.value = statData
 
-    if (error) throw error
-    if (data) stats.value = data
+    const { data: reportData } = await supabase.from('sales_report').select('*').limit(1).single()
+    if (reportData) {
+      monthlyData.value = reportData.monthly_sales
+      yearlySales.value = reportData.yearly_sales
+      productTrend.value = reportData.product_trend
+    }
   } catch (err) {
-    console.error('Error loading dashboard stats:', err.message)
+    console.error('Error loading dashboard:', err.message)
   } finally {
     loading.value = false
   }
 }
 
+// 2. Realtime Subscriptions
+let statsChannel = null
+let reportChannel = null
+
 onMounted(() => {
-  fetchStats()
+  fetchData()
+
+  // Listen for changes in stat_cards
+  statsChannel = supabase
+    .channel('public:stat_cards')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'stat_cards' }, (payload) => {
+      stats.value = payload.new
+    })
+    .subscribe()
+
+  // Listen for changes in sales_report
+  reportChannel = supabase
+    .channel('public:sales_report')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sales_report' }, (payload) => {
+      monthlyData.value = payload.new.monthly_sales
+      yearlySales.value = payload.new.yearly_sales
+      productTrend.value = payload.new.product_trend
+    })
+    .subscribe()
+})
+
+// Clean up listeners when leaving the page
+onUnmounted(() => {
+  if (statsChannel) supabase.removeChannel(statsChannel)
+  if (reportChannel) supabase.removeChannel(reportChannel)
 })
 
 const formatCurrency = (val) => {
@@ -218,27 +229,14 @@ const formatCurrency = (val) => {
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  height: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #0f172a;
-  border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #10b981;
-}
+.custom-scrollbar::-webkit-scrollbar { height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #10b981; }
 
 .group\/bar:hover .monthly-bar {
   filter: brightness(1.2);
   box-shadow: 0 -4px 12px rgba(16, 185, 129, 0.3);
 }
-
-.monthly-bar {
-  min-height: 2px;
-}
+.monthly-bar { min-height: 2px; }
 </style>

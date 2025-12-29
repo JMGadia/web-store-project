@@ -35,8 +35,8 @@
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]">Category</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]">Quantity</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]">SRP</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]">Type</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Store Price</th>
-              <th class="px-6 py-4 text-center"></th>
               <th class="px-6 py-4 text-center"></th>
             </tr>
           </thead>
@@ -59,9 +59,7 @@
                 <input type="text" v-model="item.description" placeholder="Product name..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-violet-500 outline-none w-full font-bold" />
               </td>
               <td class="px-4 py-3">
-                <select v-model="item.category" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-violet-500 outline-none w-full font-black uppercase">
-                  <option>Noodles</option><option>Coffee</option><option>Soda</option><option>Bread</option><option>Canned</option>
-                </select>
+                <input type="text" v-model="item.category" placeholder="e.g. Rice" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-violet-500 outline-none w-full font-black uppercase tracking-wider placeholder:text-slate-700" />
               </td>
               <td class="px-4 py-3">
                 <input type="number" v-model="item.qty" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-violet-500 outline-none w-20 text-center font-black" />
@@ -71,6 +69,9 @@
                   <span class="text-[10px] font-bold mr-1 text-slate-500">₱</span>
                   <input type="number" v-model="item.srp" class="bg-transparent py-2 text-xs text-white focus:outline-none w-full" placeholder="0" />
                 </div>
+              </td>
+              <td class="px-4 py-3">
+                <input type="text" v-model="item.type" placeholder="e.g. Retail" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-violet-500 outline-none w-full font-black uppercase tracking-wider placeholder:text-slate-700" />
               </td>
               <td class="px-4 py-3">
                 <div class="flex items-center bg-slate-950 border border-emerald-500/20 rounded-xl px-2">
@@ -109,10 +110,16 @@
         <div class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-8 transform transition-all">
           <div class="flex flex-col items-center">
              <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight">Confirm Entry</h3>
-             <p class="text-slate-400 text-sm text-center mb-6 font-bold">Total Capital for this batch: <span class="text-violet-400">₱{{ grandTotalCapital }}</span></p>
+             <p class="text-slate-400 text-sm text-center mb-6 font-bold">Total Capital for this batch: <span class="text-violet-400">₱{{ grandTotalCapital.toLocaleString() }}</span></p>
              <div class="grid grid-cols-2 gap-4 w-full">
                <button @click="showConfirmModal = false" class="py-3 px-4 bg-slate-800 text-slate-300 font-bold rounded-xl uppercase text-[10px]">Back</button>
-               <button @click="handleFinalSave" class="py-3 px-4 bg-emerald-600 text-white font-bold rounded-xl shadow-lg uppercase text-[10px]">Confirm</button>
+               <button
+                 @click="handleFinalSave"
+                 :disabled="isSaving"
+                 class="py-3 px-4 bg-emerald-600 text-white font-bold rounded-xl shadow-lg uppercase text-[10px] disabled:opacity-50"
+               >
+                 {{ isSaving ? 'Saving...' : 'Confirm' }}
+               </button>
              </div>
           </div>
         </div>
@@ -122,15 +129,27 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { supabase } from '../supabaseClient.js'
 import AdminLayout from '../pages/components/AdminLayout.vue'
 
 const showConfirmModal = ref(false)
+const isSaving = ref(false)
 const stockList = ref([])
 
-// Calculated Properties for the UI
+onMounted(() => {
+  const savedDraft = localStorage.getItem('stock_in_draft')
+  if (savedDraft) {
+    stockList.value = JSON.parse(savedDraft)
+  }
+})
+
+watch(stockList, (newList) => {
+  localStorage.setItem('stock_in_draft', JSON.stringify(newList))
+}, { deep: true })
+
 const grandTotalCapital = computed(() => {
-  return stockList.value.reduce((sum, item) => sum + (item.srp * item.qty), 0)
+  return stockList.value.reduce((sum, item) => sum + (Number(item.price) * Number(item.qty)), 0)
 })
 
 const totalItemsCount = computed(() => {
@@ -141,7 +160,8 @@ const addBlankRow = () => {
   stockList.value.push({
     date: new Date().toISOString().substr(0, 10),
     description: '',
-    category: 'Noodles',
+    category: '',
+    type: '', // Added Type field
     qty: 0,
     srp: 0,
     price: 0
@@ -150,8 +170,52 @@ const addBlankRow = () => {
 
 const removeItem = (index) => stockList.value.splice(index, 1)
 
-const handleFinalSave = () => {
-  stockList.value = []
-  showConfirmModal.value = false
+const handleFinalSave = async () => {
+  if (stockList.value.length === 0) return
+  isSaving.value = true
+
+  try {
+    // 1. Prepare Stock In Entries
+    const stockInEntries = stockList.value.map(item => ({
+      date: item.date,
+      description: item.description,
+      category: item.category,
+      type: item.type, // Saving to stock_in table
+      quantity: Number(item.qty),
+      srp: Number(item.srp),
+      store_price: Number(item.price)
+    }))
+
+    // 2. Prepare Inventory Entries
+    const inventoryEntries = stockList.value.map(item => ({
+      date: item.date,
+      description: item.description,
+      category: item.category,
+      type: item.type, // Saving to inventory table
+      quantity: Number(item.qty),
+      srp: Number(item.srp),
+      price: Number(item.price),
+      status: Number(item.qty) > 0 ? 'In Stock' : 'Out of Stock'
+    }))
+
+    // Save to stock_in table
+    const { error: stockInError } = await supabase.from('stock_in').insert(stockInEntries)
+    if (stockInError) throw stockInError
+
+    // Save/Update inventory table
+    const { error: invError } = await supabase.from('inventory').insert(inventoryEntries)
+    if (invError) throw invError
+
+    localStorage.removeItem('stock_in_draft')
+    stockList.value = []
+    showConfirmModal.value = false
+    alert('Stock records saved successfully!')
+
+  } catch (err) {
+    console.error('Error saving records:', err.message)
+    alert('Error: ' + err.message)
+  } finally {
+    isSaving.value = false
+  }
 }
 </script>
