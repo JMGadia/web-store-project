@@ -135,7 +135,7 @@ const addLendingRow = () => {
     datetime: getCurrentLocalTime(),
     name: '',
     amount: 0,
-    durationValue: 1,
+    durationValue: 0,
     durationUnit: 'months',
     interest: 0,
     deductValue: 0,
@@ -175,8 +175,7 @@ const confirmAll = () => {
   lendingRecords.value.forEach(r => {
     if (!r.isLocked) {
       // NEW: Add Interest to Borrowed Money upon confirmation
-      r.amount = Number(r.amount) + Number(r.interest)
-      r.interest = 0 // Set interest to 0 as it's now integrated into the principal
+      r.amount = Number(r.amount) + Number(r.interest) // Set interest to 0 as it's now integrated into the principal
       r.isLocked = true
     }
   })
