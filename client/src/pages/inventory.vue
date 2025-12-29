@@ -25,7 +25,22 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-slate-800/50 border-b border-slate-800">
-              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Date</th>
+             <th class="px-6 py-4">
+                <div class="flex items-center space-x-2">
+                  <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Date</span>
+                  <div class="relative">
+                    <select
+                      class="bg-slate-800 text-violet-400 text-[9px] font-black px-2 py-1 rounded border border-slate-700 focus:border-violet-500 outline-none uppercase cursor-pointer appearance-none pr-6"
+                    >
+                      <option>All</option>
+                      <option v-for="month in months" :key="month">{{ month }}</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-1.5 flex items-center text-violet-500">
+                      <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 9l-7 7-7-7" stroke-width="4"/></svg>
+                    </div>
+                  </div>
+                </div>
+              </th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Description</th>
 
               <th class="px-6 py-4">
@@ -82,6 +97,8 @@
 <script setup>
 import { ref } from 'vue'
 import AdminLayout from '../pages/components/AdminLayout.vue'
+
+const months = ref(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'])
 
 const inventoryItems = ref([
   { date: 'Dec 24, 2025', description: 'Lucky Me Pancit Canton', category: 'Noodles', qty: 120, srp: 15.00, price: 18.00, status: 'In Stock' },

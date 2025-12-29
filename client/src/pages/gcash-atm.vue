@@ -7,23 +7,53 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
-        <select class="bg-slate-900 border border-slate-800 text-slate-400 text-xs font-bold rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 appearance-none cursor-pointer hover:border-slate-700 transition-all">
-          <option>All Months</option>
-          <option>January</option>
-          <option>February</option>
-          <option>March</option>
-          <option selected>December</option>
+        <select v-model="selectedMonth" class="bg-slate-900 border border-slate-800 text-slate-400 text-xs font-bold rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 appearance-none cursor-pointer hover:border-slate-700 transition-all">
+          <option v-for="m in months" :key="m" :value="m">{{ m }}</option>
         </select>
 
-        <button
-          @click="addTransactionRow"
-          class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
-        >
+        <button @click="addTransactionRow" class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
           </svg>
           <span>New Entry</span>
         </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div class="bg-slate-900 border border-slate-800 p-6 rounded-[2.5rem] shadow-xl relative overflow-hidden group">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="bg-blue-500/10 p-2 rounded-xl text-blue-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+            </div>
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">GCash Capital ({{ selectedMonth }})</p>
+          </div>
+          <button @click="openEditCapital" class="p-2 bg-slate-800 hover:bg-blue-600 text-slate-400 hover:text-white rounded-xl transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+          </button>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <h2 class="text-3xl font-black text-white italic">₱{{ remainingGcash.toLocaleString() }}</h2>
+          <span class="text-[10px] text-slate-600 font-bold uppercase tracking-tighter">/ ₱{{ currentMonthlyCapital.gcash.toLocaleString() }}</span>
+        </div>
+        <p class="text-[9px] text-slate-500 mt-2 uppercase">Deducts from Cash In & Out</p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 p-6 rounded-[2.5rem] shadow-xl relative overflow-hidden group">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="bg-emerald-500/10 p-2 rounded-xl text-emerald-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M4 10h16v2H4zm0-4h16v2H4zm0 8h16v2H4zm0 4h16v2H4z"/></svg>
+            </div>
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">ATM Capital ({{ selectedMonth }})</p>
+          </div>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <h2 class="text-3xl font-black text-white italic">₱{{ remainingATM.toLocaleString() }}</h2>
+          <span class="text-[10px] text-slate-600 font-bold uppercase tracking-tighter">/ ₱{{ currentMonthlyCapital.atm.toLocaleString() }}</span>
+        </div>
+        <p class="text-[9px] text-slate-500 mt-2 uppercase">Deducts from Withdrawals</p>
       </div>
     </div>
 
@@ -42,62 +72,39 @@
           </thead>
           <tbody class="divide-y divide-slate-800">
             <tr v-if="transactions.length === 0">
-              <td colspan="6" class="px-6 py-24 text-center">
-                <div class="flex flex-col items-center opacity-20">
-                   <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p class="text-white font-black uppercase tracking-[0.3em] text-xs">No Records Found</p>
-                  <p class="text-slate-500 text-[10px] mt-1 uppercase">Click "New Entry" to start recording</p>
-                </div>
-              </td>
+              <td colspan="6" class="px-6 py-24 text-center text-slate-500 uppercase text-xs tracking-widest opacity-30 font-black">No Records Found</td>
             </tr>
-            <tr v-for="(tr, i) in transactions" :key="i"
-                :class="[tr.saved ? 'bg-slate-950/40' : 'hover:bg-slate-800/20', 'transition-colors']">
-
+            <tr v-for="(tr, i) in transactions" :key="i" :class="[tr.saved ? 'bg-slate-950/40' : 'hover:bg-slate-800/20', 'transition-colors']">
               <td class="px-4 py-3">
-                <input type="datetime-local" v-model="tr.datetime" :disabled="tr.saved"
-                  class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-[10px] text-white focus:border-indigo-500 outline-none w-full disabled:opacity-30 disabled:cursor-not-allowed uppercase font-mono" />
+                <input type="datetime-local" v-model="tr.datetime" :disabled="tr.saved" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-[10px] text-white focus:border-indigo-500 outline-none w-full disabled:opacity-30 uppercase font-mono" />
               </td>
-
               <td class="px-4 py-3">
-                <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2" :class="{'opacity-30 cursor-not-allowed': tr.saved}">
+                <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2" :class="{'opacity-30': tr.saved}">
                   <span class="text-slate-600 text-[10px] mr-2">₱</span>
-                  <input type="number" v-model="tr.cashIn" :disabled="tr.saved" class="bg-transparent text-xs text-white outline-none w-full" placeholder="0" />
+                  <input type="number" v-model="tr.cashIn" :disabled="tr.saved" class="bg-transparent text-xs text-white outline-none w-full font-bold" />
                 </div>
               </td>
-
               <td class="px-4 py-3">
-                <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2" :class="{'opacity-30 cursor-not-allowed': tr.saved}">
+                <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2" :class="{'opacity-30': tr.saved}">
                   <span class="text-slate-600 text-[10px] mr-2">₱</span>
-                  <input type="number" v-model="tr.cashOut" :disabled="tr.saved" class="bg-transparent text-xs text-white outline-none w-full" placeholder="0" />
+                  <input type="number" v-model="tr.cashOut" :disabled="tr.saved" class="bg-transparent text-xs text-white outline-none w-full font-bold" />
                 </div>
               </td>
-
               <td class="px-4 py-3">
-                <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2" :class="{'opacity-30 cursor-not-allowed': tr.saved}">
+                <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2" :class="{'opacity-30': tr.saved}">
                   <span class="text-slate-600 text-[10px] mr-2">₱</span>
-                  <input type="number" v-model="tr.withdraw" :disabled="tr.saved" class="bg-transparent text-xs text-white outline-none w-full" placeholder="0" />
+                  <input type="number" v-model="tr.withdraw" :disabled="tr.saved" class="bg-transparent text-xs text-white outline-none w-full font-bold" />
                 </div>
               </td>
-
               <td class="px-4 py-3">
-                <div class="flex items-center bg-slate-950 border border-cyan-900/30 rounded-xl px-3 py-2" :class="{'opacity-30 cursor-not-allowed': tr.saved}">
+                <div class="flex items-center bg-slate-950 border border-cyan-900/30 rounded-xl px-3 py-2" :class="{'opacity-30': tr.saved}">
                   <span class="text-cyan-500 text-[10px] mr-2">₱</span>
-                  <input type="number" v-model="tr.interest" :disabled="tr.saved" class="bg-transparent text-xs text-cyan-400 font-black outline-none w-full text-center" placeholder="0" />
+                  <input type="number" v-model="tr.interest" :disabled="tr.saved" class="bg-transparent text-xs text-cyan-400 font-black outline-none w-full text-center" />
                 </div>
               </td>
-
               <td class="px-4 py-3 text-center">
-                <div v-if="tr.saved" class="flex items-center justify-center text-slate-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  <span class="text-[9px] font-black uppercase ml-1 tracking-tighter">Locked</span>
-                </div>
-                <button v-else @click="removeRow(i)" class="text-slate-600 hover:text-rose-500 transition-colors p-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
+                <div v-if="tr.saved" class="text-slate-700 text-[9px] font-black uppercase tracking-tighter">Locked</div>
+                <button v-else @click="removeRow(i)" class="text-slate-600 hover:text-rose-500 p-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
               </td>
             </tr>
           </tbody>
@@ -106,28 +113,52 @@
 
       <div v-if="hasUnsaved" class="p-6 bg-slate-800/30 border-t border-slate-800 flex justify-end items-center space-x-8">
         <div class="text-right">
-          <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">New Interest total</p>
-          <p class="text-lg font-black text-cyan-400 leading-none mt-1">₱{{ totalUnsavedInterest.toFixed(2) }}</p>
+          <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Pending Interest</p>
+          <p class="text-lg font-black text-cyan-400 mt-1">₱{{ totalUnsavedInterest.toFixed(2) }}</p>
         </div>
-        <button
-          @click="showSaveModal = true"
-          class="bg-cyan-600 hover:bg-cyan-500 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl shadow-cyan-600/20 active:scale-95"
-        >
+        <button @click="showSaveModal = true" class="bg-cyan-600 hover:bg-cyan-500 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-cyan-600/20 active:scale-95">
           Confirm Entry
         </button>
       </div>
     </div>
 
     <transition name="modal">
+      <div v-if="showCapitalModal" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-slate-950/90 backdrop-blur-md" @click="showCapitalModal = false"></div>
+        <div class="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-2xl p-8 transform transition-all">
+          <div class="text-center">
+            <h3 class="text-xl font-black text-white mb-6 uppercase tracking-tight">Set Capital ({{ selectedMonth }})</h3>
+
+            <div class="space-y-4">
+              <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-left">
+                <span class="text-[9px] font-black text-blue-500 uppercase block mb-1 tracking-widest">GCash Starting</span>
+                <input type="number" v-model="tempGcash" class="bg-transparent text-2xl font-black text-white outline-none w-full" />
+              </div>
+              <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-left">
+                <span class="text-[9px] font-black text-emerald-500 uppercase block mb-1 tracking-widest">ATM Starting</span>
+                <input type="number" v-model="tempATM" class="bg-transparent text-2xl font-black text-white outline-none w-full" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 w-full mt-6">
+              <button @click="showCapitalModal = false" class="py-3 bg-slate-800 text-slate-400 font-bold rounded-xl text-[10px] uppercase tracking-widest hover:bg-slate-700">Cancel</button>
+              <button @click="saveCapital" class="py-3 bg-cyan-600 text-white font-bold rounded-xl text-[10px] uppercase tracking-widest">Save Settings</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <transition name="modal">
       <div v-if="showSaveModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-slate-950/90 backdrop-blur-md" @click="showSaveModal = false"></div>
-        <div class="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-2xl p-8 transform transition-all">
+        <div class="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-2xl p-8">
           <div class="flex flex-col items-center text-center">
             <h3 class="text-xl font-black text-white mb-2 uppercase tracking-tight">Finalize Transaction?</h3>
-            <p class="text-slate-400 text-sm mb-6">Confirmed entries will be recorded in the dashboard and <span class="text-rose-400 font-bold">cannot be changed</span>.</p>
+            <p class="text-slate-400 text-sm mb-6 uppercase text-[10px]">Entries cannot be edited after locking.</p>
             <div class="grid grid-cols-2 gap-3 w-full">
-              <button @click="showSaveModal = false" class="py-3 bg-slate-800 text-slate-400 font-bold rounded-xl text-[10px] uppercase tracking-widest transition-colors hover:bg-slate-700">Cancel</button>
-              <button @click="confirmSave" class="py-3 bg-cyan-600 text-white font-bold rounded-xl text-[10px] uppercase shadow-lg shadow-cyan-600/30 tracking-widest">Confirm</button>
+              <button @click="showSaveModal = false" class="py-3 bg-slate-800 text-slate-400 font-bold rounded-xl text-[10px] uppercase tracking-widest">Cancel</button>
+              <button @click="confirmSave" class="py-3 bg-cyan-600 text-white font-bold rounded-xl text-[10px] uppercase tracking-widest">Confirm</button>
             </div>
           </div>
         </div>
@@ -141,40 +172,71 @@ import { ref, computed } from 'vue'
 import AdminLayout from '../pages/components/AdminLayout.vue'
 
 const showSaveModal = ref(false)
+const showCapitalModal = ref(false)
+const selectedMonth = ref('December')
+const tempGcash = ref(0)
+const tempATM = ref(0)
 
-// Start with an empty list so there are no dummy records on load
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+// Storage for dual capitals per month
+const monthlyCapitals = ref({
+  'January': { gcash: 5000, atm: 5000 },
+  'December': { gcash: 10000, atm: 10000 }
+})
+
 const transactions = ref([])
 
-const hasUnsaved = computed(() => transactions.value.some(t => !t.saved))
+// Get Current Month Data
+const currentMonthlyCapital = computed(() => {
+  return monthlyCapitals.value[selectedMonth.value] || { gcash: 0, atm: 0 }
+})
 
+// Logic for GCash (Cash In & Cash Out)
+const remainingGcash = computed(() => {
+  const gcashDeductions = transactions.value.reduce((sum, tr) => {
+    return sum + (Number(tr.cashIn) || 0) + (Number(tr.cashOut) || 0)
+  }, 0)
+  return currentMonthlyCapital.value.gcash - gcashDeductions
+})
+
+// Logic for ATM (Withdraw)
+const remainingATM = computed(() => {
+  const atmDeductions = transactions.value.reduce((sum, tr) => {
+    return sum + (Number(tr.withdraw) || 0)
+  }, 0)
+  return currentMonthlyCapital.value.atm - atmDeductions
+})
+
+const hasUnsaved = computed(() => transactions.value.some(t => !t.saved))
 const totalUnsavedInterest = computed(() => {
-  return transactions.value
-    .filter(t => !t.saved)
-    .reduce((sum, item) => sum + (Number(item.interest) || 0), 0)
+  return transactions.value.filter(t => !t.saved).reduce((sum, item) => sum + (Number(item.interest) || 0), 0)
 })
 
 const addTransactionRow = () => {
-  // ISO format adapted for datetime-local: YYYY-MM-DDTHH:mm
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   const formattedDate = now.toISOString().slice(0, 16);
+  transactions.value.push({ datetime: formattedDate, cashIn: 0, cashOut: 0, withdraw: 0, interest: 0, saved: false })
+}
 
-  transactions.value.push({
-    datetime: formattedDate,
-    cashIn: 0,
-    cashOut: 0,
-    withdraw: 0,
-    interest: 0,
-    saved: false
-  })
+const openEditCapital = () => {
+  tempGcash.value = currentMonthlyCapital.value.gcash
+  tempATM.value = currentMonthlyCapital.value.atm
+  showCapitalModal.value = true
+}
+
+const saveCapital = () => {
+  monthlyCapitals.value[selectedMonth.value] = {
+    gcash: tempGcash.value,
+    atm: tempATM.value
+  }
+  showCapitalModal.value = false
 }
 
 const removeRow = (i) => transactions.value.splice(i, 1)
-
 const confirmSave = () => {
-  transactions.value.forEach(t => {
-    if(!t.saved) t.saved = true
-  })
+  transactions.value.forEach(t => { if(!t.saved) t.saved = true })
   showSaveModal.value = false
 }
 </script>
@@ -182,13 +244,6 @@ const confirmSave = () => {
 <style scoped>
 .modal-enter-active, .modal-leave-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.95); }
-
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-/* Custom calendar icon color for dark mode */
-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-  opacity: 0.5;
-}
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; }
 </style>
