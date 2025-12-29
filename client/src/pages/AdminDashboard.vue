@@ -6,35 +6,46 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
       <div class="bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-sm hover:border-violet-500/50 transition-all group">
         <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Store Sales</p>
         <div class="flex items-end justify-between mb-4">
-          <h2 class="text-2xl font-black text-white">₱12,450.00</h2>
+          <h2 class="text-2xl font-black text-white">
+            {{ loading ? '...' : formatCurrency(stats.store_sales) }}
+          </h2>
           <span class="text-emerald-500 text-xs font-bold mb-1">+12% ↑</span>
         </div>
         <div class="pt-4 border-t border-slate-800/50">
           <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Total Capital This Year</p>
-          <p class="text-sm font-black text-violet-400">₱8,500.00</p>
+          <p class="text-sm font-black text-violet-400">
+            {{ loading ? '...' : formatCurrency(stats.store_capital) }}
+          </p>
         </div>
       </div>
 
       <div class="bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-sm hover:border-blue-500/50 transition-all">
         <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">GCash & ATM</p>
         <div class="flex items-end justify-between mb-4">
-          <h2 class="text-2xl font-black text-white">₱8,200.00</h2>
+          <h2 class="text-2xl font-black text-white">
+            {{ loading ? '...' : formatCurrency(stats.gcash_atm_sales) }}
+          </h2>
           <span class="text-blue-400 text-xs font-bold mb-1">Sales</span>
         </div>
         <div class="pt-4 border-t border-slate-800/50">
           <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Total Capital This Year</p>
-          <p class="text-sm font-black text-blue-400">₱50,000.00</p>
+          <p class="text-sm font-black text-blue-400">
+            {{ loading ? '...' : formatCurrency(stats.gcash_atm_capital) }}
+          </p>
         </div>
       </div>
 
       <div class="bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-sm hover:border-amber-500/50 transition-all">
         <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Total Stocks</p>
         <div class="flex items-end justify-between">
-          <h2 class="text-2xl font-black text-white">1,402</h2>
-          <span class="text-amber-500 text-xs font-bold mb-1">24 Low Items</span>
+          <h2 class="text-2xl font-black text-white">
+            {{ loading ? '...' : stats.total_stocks.toLocaleString() }}
+          </h2>
+          <span class="text-amber-500 text-xs font-bold mb-1">Live Inventory</span>
         </div>
         <div class="mt-5 h-1 w-full bg-slate-800 rounded-full overflow-hidden">
           <div class="bg-amber-500 h-full w-[80%]"></div>
@@ -46,24 +57,29 @@
         <div class="flex items-center space-x-4 mt-1 mb-4">
           <div>
             <p class="text-[10px] text-slate-500 font-bold uppercase">Paid</p>
-            <p class="text-xl font-black text-emerald-500">18</p>
+            <p class="text-xl font-black text-emerald-500">
+              {{ loading ? '..' : stats.paid_count }}
+            </p>
           </div>
           <div class="h-8 w-px bg-slate-800"></div>
           <div>
             <p class="text-[10px] text-slate-500 font-bold uppercase">Not Paid</p>
-            <p class="text-xl font-black text-rose-500">07</p>
+            <p class="text-xl font-black text-rose-500">
+              {{ loading ? '..' : stats.unpaid_count }}
+            </p>
           </div>
         </div>
         <div class="pt-4 border-t border-slate-800/50">
           <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Total Accumulate</p>
-          <p class="text-sm font-black text-rose-400">₱24,150.00</p>
+          <p class="text-sm font-black text-rose-400">
+            {{ loading ? '...' : formatCurrency(stats.total_accumulate) }}
+          </p>
         </div>
       </div>
     </div>
 
     <div class="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-    <section class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 group overflow-hidden">
+      <section class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 group overflow-hidden">
         <div class="mb-6">
           <h3 class="text-lg font-black text-white tracking-tight uppercase italic">Monthly Sales Performance</h3>
           <p class="text-slate-500 text-xs font-bold tracking-widest uppercase">Gadia Revenue Flow</p>
@@ -71,43 +87,18 @@
 
         <div class="overflow-x-auto pb-4 custom-scrollbar">
           <div class="relative min-w-[600px] h-64 mt-10 px-2">
-
             <div class="flex items-end justify-between h-48 w-full gap-3 px-1">
-            <div
-              v-for="(data, i) in [
-                {m: 'JAN', h: '25%', val: '250K'}, {m: 'FEB', h: '30%', val: '300K'},
-                {m: 'MAR', h: '45%', val: '450K'}, {m: 'APR', h: '40%', val: '400K'},
-                {m: 'MAY', h: '55%', val: '550K'}, {m: 'JUN', h: '60%', val: '600K'},
-                {m: 'JUL', h: '75%', val: '750K'}, {m: 'AUG', h: '70%', val: '700K'},
-                {m: 'SEP', h: '85%', val: '850K'}, {m: 'OCT', h: '90%', val: '900K'},
-                {m: 'NOV', h: '100%', val: '1.0M'}, {m: 'DEC', h: '42%', val: '421K'}
-              ]"
-              :key="i"
-              class="flex-1 flex flex-col justify-end items-center group/bar relative h-full"
-            >
-
-              <span
-                class="absolute -top-8 text-[10px] font-black text-white bg-slate-950 px-2 py-1 rounded
-                      border border-slate-800 opacity-0 group-hover/bar:opacity-100
-                      transition-all duration-300 z-10 whitespace-nowrap shadow-xl">
-                ₱{{ data.val }}
-              </span>
-
-              <div
-                class="w-full monthly-bar bg-gradient-to-t
-                      from-emerald-500/5 via-emerald-500/20 to-emerald-500
-                      border-t-2 border-emerald-400 rounded-t-md
-                      transition-all duration-700 ease-out
-                      group-hover/bar:brightness-125
-                      group-hover/bar:shadow-[0_-4px_12px_rgba(16,185,129,0.3)]"
-                :style="{ height: data.h }"
-              ></div>
-
-              <span class="text-[10px] font-black text-slate-500 mt-4 uppercase tracking-tighter">
-                {{ data.m }}
-              </span>
+              <div v-for="(data, i) in monthlyData" :key="i" class="flex-1 flex flex-col justify-end items-center group/bar relative h-full">
+                <span class="absolute -top-8 text-[10px] font-black text-white bg-slate-950 px-2 py-1 rounded border border-slate-800 opacity-0 group-hover/bar:opacity-100 transition-all duration-300 z-10 whitespace-nowrap shadow-xl">
+                  ₱{{ data.val }}
+                </span>
+                <div
+                  class="w-full monthly-bar bg-gradient-to-t from-emerald-500/5 via-emerald-500/20 to-emerald-500 border-t-2 border-emerald-400 rounded-t-md transition-all duration-700 ease-out"
+                  :style="{ height: data.h }"
+                ></div>
+                <span class="text-[10px] font-black text-slate-500 mt-4 uppercase tracking-tighter">{{ data.m }}</span>
+              </div>
             </div>
-          </div>
           </div>
         </div>
       </section>
@@ -168,7 +159,62 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+// Update this path to where your actual Supabase client file is located
+import { supabase } from '../supabaseClient.js'
 import AdminLayout from '../pages/components/AdminLayout.vue'
+
+// Reactive state for database values
+const stats = ref({
+  store_sales: 0,
+  store_capital: 0,
+  gcash_atm_sales: 0,
+  gcash_atm_capital: 0,
+  total_stocks: 0,
+  paid_count: 0,
+  unpaid_count: 0,
+  total_accumulate: 0
+})
+
+const loading = ref(true)
+
+// Static data for Monthly Chart (for now)
+const monthlyData = ref([
+  {m: 'JAN', h: '25%', val: '250K'}, {m: 'FEB', h: '30%', val: '300K'},
+  {m: 'MAR', h: '45%', val: '450K'}, {m: 'APR', h: '40%', val: '400K'},
+  {m: 'MAY', h: '55%', val: '550K'}, {m: 'JUN', h: '60%', val: '600K'},
+  {m: 'JUL', h: '75%', val: '750K'}, {m: 'AUG', h: '70%', val: '700K'},
+  {m: 'SEP', h: '85%', val: '850K'}, {m: 'OCT', h: '90%', val: '900K'},
+  {m: 'NOV', h: '100%', val: '1.0M'}, {m: 'DEC', h: '42%', val: '421K'}
+])
+
+const fetchStats = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('stat_cards')
+      .select('*')
+      .limit(1)
+      .single()
+
+    if (error) throw error
+    if (data) stats.value = data
+  } catch (err) {
+    console.error('Error loading dashboard stats:', err.message)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchStats()
+})
+
+const formatCurrency = (val) => {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+  }).format(val)
+}
 </script>
 
 <style scoped>
@@ -176,31 +222,23 @@ import AdminLayout from '../pages/components/AdminLayout.vue'
   height: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #0f172a; /* matches slate-900 */
+  background: #0f172a;
   border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #1e293b; /* matches slate-800 */
+  background: #1e293b;
   border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #10b981; /* emerald-500 on hover */
+  background: #10b981;
 }
 
-/* Logic to handle dynamic rising:
-   If heights aren't showing, ensure the parent has a defined height. */
-.group\/bar:hover div {
+.group\/bar:hover .monthly-bar {
   filter: brightness(1.2);
+  box-shadow: 0 -4px 12px rgba(16, 185, 129, 0.3);
 }
 
-/* Ensure bars grow from bottom */
 .monthly-bar {
   min-height: 2px;
 }
-
-/* Hover polish only */
-.group\/bar:hover .monthly-bar {
-  filter: brightness(1.2);
-}
-
 </style>
