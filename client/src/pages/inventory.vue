@@ -42,7 +42,6 @@
                 </div>
               </th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Description</th>
-
               <th class="px-6 py-4">
                 <div class="flex items-center space-x-2">
                   <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Category</span>
@@ -70,6 +69,7 @@
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">SRP</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Price</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Action</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800">
@@ -77,7 +77,17 @@
               <td class="px-6 py-4 text-xs text-slate-500 font-bold uppercase">{{ item.date }}</td>
               <td class="px-6 py-4 text-sm font-bold text-white">{{ item.description }}</td>
               <td class="px-6 py-4 text-xs font-bold text-slate-300 uppercase tracking-wide">{{ item.category }}</td>
-              <td class="px-6 py-4 text-sm font-black text-slate-200">{{ item.qty }}</td>
+
+              <td class="px-6 py-4 text-sm font-black text-slate-200">
+                <input
+                  v-if="item.isEditing"
+                  type="number"
+                  v-model="item.tempQty"
+                  class="w-20 bg-slate-950 border border-violet-500 rounded px-2 py-1 text-white focus:outline-none"
+                />
+                <span v-else>{{ item.qty }}</span>
+              </td>
+
               <td class="px-6 py-4 text-sm font-bold text-slate-400">₱{{ item.srp.toFixed(2) }}</td>
               <td class="px-6 py-4 text-sm font-black text-white">₱{{ item.price.toFixed(2) }}</td>
               <td class="px-6 py-4">
@@ -85,6 +95,24 @@
                   <span class="w-1.5 h-1.5 rounded-full mr-2" :class="statusBullet(item.status)"></span>
                   {{ item.status }}
                 </span>
+              </td>
+
+              <td class="px-6 py-4 text-center">
+                <div v-if="!item.isEditing" @click="startEdit(i)" class="inline-flex items-center text-violet-400 hover:text-violet-300 cursor-pointer transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span class="text-[10px] font-black uppercase italic tracking-tighter">Edit Qty</span>
+                </div>
+
+                <div v-else class="flex items-center justify-center space-x-2">
+                  <button @click="saveEdit(i)" class="bg-emerald-600 hover:bg-emerald-500 text-white p-1.5 rounded-lg shadow-lg active:scale-90 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                  </button>
+                  <button @click="item.isEditing = false" class="bg-slate-700 hover:bg-slate-600 text-slate-300 p-1.5 rounded-lg active:scale-90 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -101,14 +129,11 @@ import AdminLayout from '../pages/components/AdminLayout.vue'
 const months = ref(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'])
 
 const inventoryItems = ref([
-  { date: 'Dec 24, 2025', description: 'Lucky Me Pancit Canton', category: 'Noodles', qty: 120, srp: 15.00, price: 18.00, status: 'In Stock' },
-  { date: 'Dec 23, 2025', description: 'Nescafe Original 3-in-1', category: 'Coffee', qty: 15, srp: 8.00, price: 10.00, status: 'Low Stock' },
-  { date: 'Dec 22, 2025', description: 'Coca-Cola 1.5L', category: 'Soda', qty: 0, srp: 65.00, price: 75.00, status: 'Out of Stock' },
-  { date: 'Dec 21, 2025', description: 'Silver Swan Soy Sauce', category: 'Canned', qty: 45, srp: 22.00, price: 25.00, status: 'In Stock' },
-  { date: 'Dec 20, 2025', description: 'Gardenia Loaf Bread', category: 'Bread', qty: 8, srp: 75.00, price: 82.00, status: 'Low Stock' },
-  { date: 'Dec 20, 2025', description: 'Gardenia Loaf Bread', category: 'Bread', qty: 8, srp: 75.00, price: 82.00, status: 'Low Stock' },
-  { date: 'Dec 20, 2025', description: 'Gardenia Loaf Bread', category: 'Bread', qty: 8, srp: 75.00, price: 82.00, status: 'Low Stock' },
-  { date: 'Dec 20, 2025', description: 'Gardenia Loaf Bread', category: 'Bread', qty: 8, srp: 75.00, price: 82.00, status: 'Low Stock' },
+  { date: 'Dec 24, 2025', description: 'Lucky Me Pancit Canton', category: 'Noodles', qty: 120, srp: 15.00, price: 18.00, status: 'In Stock', isEditing: false, tempQty: 0 },
+  { date: 'Dec 23, 2025', description: 'Nescafe Original 3-in-1', category: 'Coffee', qty: 15, srp: 8.00, price: 10.00, status: 'Low Stock', isEditing: false, tempQty: 0 },
+  { date: 'Dec 22, 2025', description: 'Coca-Cola 1.5L', category: 'Soda', qty: 0, srp: 65.00, price: 75.00, status: 'Out of Stock', isEditing: false, tempQty: 0 },
+  { date: 'Dec 21, 2025', description: 'Silver Swan Soy Sauce', category: 'Canned', qty: 45, srp: 22.00, price: 25.00, status: 'In Stock', isEditing: false, tempQty: 0 },
+  { date: 'Dec 20, 2025', description: 'Gardenia Loaf Bread', category: 'Bread', qty: 8, srp: 75.00, price: 82.00, status: 'Low Stock', isEditing: false, tempQty: 0 },
 ])
 
 const statusClasses = (s) => {
@@ -121,5 +146,29 @@ const statusBullet = (s) => {
   if (s === 'In Stock') return 'bg-emerald-500'
   if (s === 'Low Stock') return 'bg-amber-500'
   return 'bg-rose-500'
+}
+
+// Logic to start editing
+const startEdit = (index) => {
+  const item = inventoryItems.value[index]
+  item.tempQty = item.qty
+  item.isEditing = true
+}
+
+// Logic to save quantity and update status
+const saveEdit = (index) => {
+  const item = inventoryItems.value[index]
+  item.qty = item.tempQty
+
+  // Logic to update the status based on new quantity
+  if (item.qty <= 0) {
+    item.status = 'Out of Stock'
+  } else if (item.qty <= 20) {
+    item.status = 'Low Stock'
+  } else {
+    item.status = 'In Stock'
+  }
+
+  item.isEditing = false
 }
 </script>

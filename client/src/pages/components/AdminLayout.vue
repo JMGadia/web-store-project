@@ -17,7 +17,6 @@
           <router-link to="/admin-dashboard" class="text-sm font-bold transition-colors" active-class="text-violet-400 border-b-2 border-violet-500 pb-1">Dashboard</router-link>
           <router-link to="/inventory" class="text-sm font-bold text-slate-400 hover:text-white transition-colors" active-class="text-violet-400 border-b-2 border-violet-500 pb-1">Inventory</router-link>
           <router-link to="/stock-in" class="text-sm font-bold text-slate-400 hover:text-white transition-colors" active-class="text-violet-400 border-b-2 border-violet-500 pb-1">Stock In</router-link>
-          <router-link to="/stock-out" class="text-sm font-bold text-slate-400 hover:text-white transition-colors" active-class="text-violet-400 border-b-2 border-violet-500 pb-1">Stock Out</router-link>
           <router-link to="/gcash-atm" class="text-sm font-bold text-slate-400 hover:text-white transition-colors" active-class="text-violet-400 border-b-2 border-violet-500 pb-1">GCash & ATM</router-link>
           <router-link to="/lending-list" class="text-sm font-bold text-slate-400 hover:text-white transition-colors" active-class="text-violet-400 border-b-2 border-violet-500 pb-1">Lending List</router-link>
         </div>
@@ -71,7 +70,6 @@
           <router-link @click="isMobileMenuOpen = false" to="/admin-dashboard" class="text-xl font-bold text-slate-300">Dashboard</router-link>
           <router-link @click="isMobileMenuOpen = false" to="/inventory" class="text-xl font-bold text-slate-300">Inventory</router-link>
           <router-link @click="isMobileMenuOpen = false" to="/stock-in" class="text-xl font-bold text-slate-300">Stock In</router-link>
-          <router-link @click="isMobileMenuOpen = false" to="/stock-out" class="text-xl font-bold text-slate-300">Stock Out</router-link>
           <router-link @click="isMobileMenuOpen = false" to="/gcash-atm" class="text-xl font-bold text-slate-300">GCash & ATM</router-link>
           <router-link @click="isMobileMenuOpen = false" to="/lending-list" class="text-xl font-bold text-slate-300">Lending List</router-link>
           <hr class="border-slate-800">

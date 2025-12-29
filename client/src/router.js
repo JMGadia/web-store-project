@@ -7,7 +7,6 @@ import AdminDashboard from './pages/AdminDashboard.vue';
 import UserHome from './pages/UserHome.vue';
 import Inventory from './pages/inventory.vue';
 import StockIn from './pages/stock-in.vue';
-import StockOut from './pages/stock-out.vue';
 import GcashATM from './pages/gcash-atm.vue';
 import LendingList from './pages/lending-list.vue';
 
@@ -21,7 +20,6 @@ const routes = [
   { path: '/user-home', component: UserHome },
   { path: '/inventory', component: Inventory },
   { path: '/stock-in', component: StockIn },
-  { path: '/stock-out', component: StockOut },
   { path: '/gcash-atm', component: GcashATM },
   { path: '/lending-list', component: LendingList }
 ];
@@ -53,7 +51,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // 3. PROTECTION LOGIC (URLs for Logged-in Users)
-  const adminPaths = ['/admin-dashboard', '/inventory', '/stock-in', '/stock-out', '/gcash-atm', '/lending-list'];
+  const adminPaths = ['/admin-dashboard', '/inventory', '/stock-in', '/gcash-atm', '/lending-list'];
 
   if (adminPaths.includes(to.path)) {
     if (!userData) {
