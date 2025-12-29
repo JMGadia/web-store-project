@@ -30,7 +30,7 @@
             <tr v-for="(loan, i) in lendingRecords" :key="i" class="hover:bg-slate-800/20">
 
               <td class="px-3 py-3">
-                <input type="datetime-local" v-model="loan.datetime" :disabled="loan.isLocked" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-2 text-[10px] text-white w-full disabled:opacity-50" />
+                <input type="datetime-local" v-model="loan.datetime" :disabled="loan.isLocked" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-2 text-[10px] text-white w-full disabled:opacity-80" />
               </td>
 
               <td class="px-3 py-3">
@@ -104,7 +104,7 @@
     <div v-if="showModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm">
       <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl">
         <h2 class="text-xl font-black text-white uppercase italic mb-4">Lock Records?</h2>
-        <p class="text-slate-400 text-sm mb-8">This will lock the Name, Initial Borrowed amount, and Duration. Deductions will remain open.</p>
+        <p class="text-slate-400 text-sm mb-8">This will add the Interest to the Borrowed Money and lock the core details. Deductions will remain open.</p>
         <div class="flex gap-4">
           <button @click="showModal = false" class="flex-1 py-3 bg-slate-800 text-slate-300 rounded-xl font-bold uppercase text-xs">Cancel</button>
           <button @click="confirmAll" class="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs shadow-lg">Confirm</button>
@@ -123,10 +123,16 @@ const showModal = ref(false)
 
 const hasUnlocked = computed(() => lendingRecords.value.some(r => !r.isLocked))
 
+// Helper to get current local time in YYYY-MM-DDThh:mm format
+const getCurrentLocalTime = () => {
+  const now = new Date()
+  const offset = now.getTimezoneOffset() * 60000
+  return new Date(now - offset).toISOString().slice(0, 16)
+}
+
 const addLendingRow = () => {
-  const now = new Date().toISOString().slice(0, 16)
   lendingRecords.value.push({
-    datetime: now,
+    datetime: getCurrentLocalTime(),
     name: '',
     amount: 0,
     durationValue: 1,
@@ -144,24 +150,36 @@ const saveAndDeduct = (index) => {
   const toDeduct = Number(r.deductValue) || 0
 
   if (toDeduct > 0) {
-    // Math: Subtract from Borrowed Money
+    // 1. Math: Subtract from Borrowed Money
     r.amount = Math.max(0, r.amount - toDeduct)
     r.deductValue = 0 // Reset deduct field
 
-    // Auto-update status
+    // 2. NEW: Update the date and time to current moment of deduction
+    r.datetime = getCurrentLocalTime()
+
+    // 3. Auto-update status
     if (r.amount === 0) r.status = 'Paid'
     else r.status = 'Partial'
 
     // Visual feedback
     r.flash = true
     setTimeout(() => { r.flash = false }, 1000)
-  }
 
-  alert('Record Updated and Amount Deducted!')
+    alert('Deduction confirmed! Date updated.')
+  } else {
+    alert('Please enter a deduction amount.')
+  }
 }
 
 const confirmAll = () => {
-  lendingRecords.value.forEach(r => { r.isLocked = true })
+  lendingRecords.value.forEach(r => {
+    if (!r.isLocked) {
+      // NEW: Add Interest to Borrowed Money upon confirmation
+      r.amount = Number(r.amount) + Number(r.interest)
+      r.interest = 0 // Set interest to 0 as it's now integrated into the principal
+      r.isLocked = true
+    }
+  })
   showModal.value = false
 }
 
