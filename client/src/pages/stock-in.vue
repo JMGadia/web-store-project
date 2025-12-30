@@ -34,8 +34,9 @@
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]">Description</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]">Category</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]">Quantity</th>
-              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]">SRP</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]">Type</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]">SRP</th>
+
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Store Price</th>
               <th class="px-6 py-4 text-center"></th>
             </tr>
@@ -64,14 +65,14 @@
               <td class="px-4 py-3">
                 <input type="number" v-model="item.qty" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-violet-500 outline-none w-20 text-center font-black" />
               </td>
+               <td class="px-4 py-3">
+                <input type="text" v-model="item.type" placeholder="e.g. Retail" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-violet-500 outline-none w-full font-black uppercase tracking-wider placeholder:text-slate-700" />
+              </td>
               <td class="px-4 py-3">
                 <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-2">
                   <span class="text-[10px] font-bold mr-1 text-slate-500">₱</span>
                   <input type="number" v-model="item.srp" class="bg-transparent py-2 text-xs text-white focus:outline-none w-full" placeholder="0" />
                 </div>
-              </td>
-              <td class="px-4 py-3">
-                <input type="text" v-model="item.type" placeholder="e.g. Retail" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-violet-500 outline-none w-full font-black uppercase tracking-wider placeholder:text-slate-700" />
               </td>
               <td class="px-4 py-3">
                 <div class="flex items-center bg-slate-950 border border-emerald-500/20 rounded-xl px-2">
