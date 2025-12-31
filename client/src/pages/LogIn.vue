@@ -16,7 +16,7 @@
 
         <form class="space-y-6" @submit.prevent="handleLogin">
           <div class="space-y-2">
-            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Admin Identifier</label>
+            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label>
             <div class="relative">
               <input v-model="email" type="email" placeholder="example@gmail.com" required
                 class="block w-full px-5 py-4 bg-slate-950/50 rounded-2xl border border-slate-800 text-white placeholder:text-slate-600 focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 outline-none transition-all" />
@@ -25,7 +25,7 @@
 
           <div class="space-y-2">
             <div class="flex justify-between items-center px-1">
-              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest">Security Key</label>
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest">Password</label>
               <router-link to="/forgot-password" class="text-[9px] font-bold text-slate-500 hover:text-violet-400 transition-colors uppercase tracking-tighter">Lost Access?</router-link>
             </div>
             <div class="relative">
