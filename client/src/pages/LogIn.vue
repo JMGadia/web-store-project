@@ -1,46 +1,79 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4">
-    <div class="sm:mx-auto w-full max-w-md">
-      <div class="bg-white py-10 px-8 shadow-2xl rounded-3xl border border-gray-100">
-        <h2 class="text-4xl font-black text-center text-gray-900 mb-10">Login</h2>
+  <div class="min-h-screen bg-slate-950 flex flex-col justify-center items-center py-12 px-4 relative overflow-hidden">
+    <div class="absolute top-0 -right-4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] animate-pulse"></div>
+    <div class="absolute bottom-0 -left-4 w-96 h-96 bg-violet-600/10 rounded-full blur-[120px] animate-pulse delay-700"></div>
+
+    <div class="w-full max-w-md z-10">
+      <div class="text-center mb-10">
+        <h2 class="text-4xl font-black text-white tracking-tighter uppercase italic">
+          System <span class="text-violet-500">Access</span>
+        </h2>
+        <p class="text-slate-500 text-[10px] font-black tracking-[0.3em] uppercase mt-2">Store Management System</p>
+      </div>
+
+      <div class="bg-slate-900/50 backdrop-blur-2xl py-10 px-8 md:px-10 shadow-2xl rounded-[3rem] border border-slate-800/50 relative overflow-hidden">
+        <div class="absolute -top-24 -left-24 w-48 h-48 bg-violet-500/5 blur-3xl"></div>
 
         <form class="space-y-6" @submit.prevent="handleLogin">
-          <div>
-            <label class="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
-            <input v-model="email" type="email" placeholder="jhunmarkgadia202@gmail.com" required
-              class="block w-full px-4 py-3.5 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none" />
+          <div class="space-y-2">
+            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Admin Identifier</label>
+            <div class="relative">
+              <input v-model="email" type="email" placeholder="example@gmail.com" required
+                class="block w-full px-5 py-4 bg-slate-950/50 rounded-2xl border border-slate-800 text-white placeholder:text-slate-600 focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 outline-none transition-all" />
+            </div>
           </div>
 
-          <div class="relative">
-            <label class="block text-sm font-bold text-gray-700 mb-2">Password</label>
-            <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••" required
-              class="block w-full px-4 py-3.5 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none" />
-            <button type="button" @click="showPassword = !showPassword"
-              class="absolute right-4 top-[42px] text-xs font-black text-gray-400 hover:text-indigo-600 uppercase tracking-widest">
-              {{ showPassword ? 'Hide' : 'Show' }}
-            </button>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center px-1">
+              <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest">Security Key</label>
+              <router-link to="/forgot-password" class="text-[9px] font-bold text-slate-500 hover:text-violet-400 transition-colors uppercase tracking-tighter">Lost Access?</router-link>
+            </div>
+            <div class="relative">
+              <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••" required
+                class="block w-full px-5 py-4 bg-slate-950/50 rounded-2xl border border-slate-800 text-white placeholder:text-slate-600 focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 outline-none transition-all" />
+              <button type="button" @click="showPassword = !showPassword"
+                class="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-violet-400 transition-colors">
+                <span class="text-[9px] font-black tracking-widest uppercase">{{ showPassword ? 'Hide' : 'Show' }}</span>
+              </button>
+            </div>
           </div>
 
           <button type="submit" :disabled="loading"
-            class="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:scale-[0.98] transition-all disabled:opacity-50">
-            {{ loading ? 'Verifying...' : 'Login' }}
+            class="group relative w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl overflow-hidden shadow-xl shadow-violet-500/20 active:scale-[0.97] transition-all disabled:opacity-50">
+            <span class="relative z-10">{{ loading ? 'Authenticating...' : 'Authorize Login' }}</span>
+            <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
           </button>
         </form>
 
-        <div v-if="error" class="mt-6 p-4 rounded-2xl bg-red-50 border border-red-100 text-center">
-           <span class="text-sm font-bold text-red-600">{{ error }}</span>
-        </div>
+        <transition name="fade">
+          <div v-if="error" class="mt-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/50 text-center">
+            <span class="text-[11px] font-black text-rose-400 uppercase tracking-wide">{{ error }}</span>
+          </div>
+        </transition>
 
-        <div class="mt-8 flex flex-col items-center space-y-3 text-sm">
-          <router-link to="/forgot-password" class="text-indigo-600 font-bold hover:text-indigo-800 transition-colors">Forgot Password?</router-link>
-          <router-link to="/signup" class="text-indigo-600 font-bold hover:text-indigo-800 transition-colors">
-            Don't have an account? Sign Up
+        <div class="mt-8 pt-6 border-t border-slate-800/50 text-center">
+          <router-link to="/signup" class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] group">
+            No Authorization? <span class="text-violet-500 group-hover:text-violet-400 transition-colors underline underline-offset-4 ml-1">Create Profile</span>
           </router-link>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* Remove browser blue autofill */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: white;
+  -webkit-box-shadow: 0 0 0px 1000px #020617 inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+</style>
 
 <script setup>
 import { ref } from 'vue'
