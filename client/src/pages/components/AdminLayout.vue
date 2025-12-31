@@ -1,34 +1,35 @@
 <template>
   <div class="min-h-screen bg-slate-950 text-slate-100 selection:bg-violet-500/30 font-sans overflow-x-hidden">
-    <nav class="bg-slate-900/80 backdrop-blur-xl shadow-2xl border-b border-slate-800/50 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-[60]">
-      <div class="flex items-center space-x-3 shrink-0">
-        <div class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-violet-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <nav class="bg-slate-900/80 backdrop-blur-xl shadow-2xl border-b border-slate-800/50 px-4 md:px-6 lg:px-8 py-3 md:py-4 flex items-center justify-between sticky top-0 z-[60]">
+
+      <div class="flex items-center space-x-2 md:space-x-3 shrink-0">
+        <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-violet-600 to-indigo-700 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-6 md:w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         </div>
-        <span class="text-lg md:text-2xl font-black text-white tracking-tight shrink-0">
-          Gadia<span class="text-violet-500 italic">SARI</span>
+        <span class="text-sm md:text-xl lg:text-2xl font-black text-white tracking-tight leading-none uppercase shrink-0">
+          GD<span class="text-violet-500 italic hidden xs:inline">SARI-SARI</span><span class="hidden sm:inline italic text-violet-500"> STORE</span>
         </span>
       </div>
 
       <div class="hidden md:flex items-center flex-1 justify-end ml-4 lg:ml-8">
-        <div class="flex items-center space-x-1 border-r border-slate-800 pr-4 lg:pr-6 mr-4 lg:mr-6 overflow-x-auto no-scrollbar">
+        <div class="flex items-center space-x-1 border-r border-slate-800 pr-4 lg:pr-6 mr-4 lg:mr-6">
           <router-link v-for="link in navLinks" :key="link.path" :to="link.path"
-            class="px-3 lg:px-4 py-2 text-[12px] lg:text-sm font-bold text-slate-400 hover:text-white transition-all rounded-lg hover:bg-slate-800 whitespace-nowrap"
+            class="px-2 lg:px-4 py-2 text-[11px] lg:text-sm font-bold text-slate-400 hover:text-white transition-all rounded-lg hover:bg-slate-800 whitespace-nowrap"
             active-class="text-violet-400 bg-violet-500/10">
             {{ link.name }}
           </router-link>
         </div>
 
-        <div class="relative">
+        <div class="relative shrink-0">
           <button @click="isAccountDropdownOpen = !isAccountDropdownOpen"
-            class="flex items-center space-x-2 bg-slate-800/50 px-3 lg:px-4 py-2.5 rounded-xl border border-slate-700/50 hover:bg-slate-700 transition-all">
+            class="flex items-center space-x-2 bg-slate-800/50 px-3 py-2 rounded-xl border border-slate-700/50 hover:bg-slate-700 transition-all">
             <div class="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center text-[10px] font-black uppercase text-white shrink-0">
               {{ adminName.charAt(0) }}
             </div>
-            <span class="text-xs lg:text-sm font-bold text-slate-200 hidden sm:inline">Admin</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500 transition-transform" :class="{'rotate-180': isAccountDropdownOpen}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <span class="text-xs font-bold text-slate-200 hidden lg:inline">Admin</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
@@ -41,7 +42,6 @@
                 <p class="text-xs text-slate-400 truncate">{{ adminEmail }}</p>
               </div>
               <button @click="triggerLogoutModal" class="w-[calc(100%-16px)] mx-2 flex items-center space-x-3 px-3 py-2.5 text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors font-bold text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 <span>Sign Out</span>
               </button>
             </div>
@@ -51,10 +51,10 @@
 
       <div class="md:hidden flex items-center">
         <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="text-slate-300 p-2 hover:bg-slate-800 rounded-xl transition-colors">
-          <svg v-if="!isMobileMenuOpen" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg v-if="!isMobileMenuOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10m-10 6h16" />
           </svg>
-          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -62,10 +62,10 @@
     </nav>
 
     <transition name="slide">
-      <div v-if="isMobileMenuOpen" class="fixed inset-y-0 right-0 w-[280px] z-[55] bg-slate-900 border-l border-slate-800 shadow-2xl md:hidden flex flex-col pt-20">
-        <div class="flex-1 overflow-y-auto px-4 py-6 space-y-2">
+      <div v-if="isMobileMenuOpen" class="fixed inset-y-0 right-0 w-[min(85%,300px)] z-[55] bg-slate-900 border-l border-slate-800 shadow-2xl md:hidden flex flex-col">
+        <div class="flex-1 overflow-y-auto px-4 py-24 space-y-2">
           <div class="bg-slate-950/50 p-4 rounded-2xl border border-slate-800 mb-6">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Signed In As</p>
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Current User</p>
             <h2 class="text-lg font-black text-white truncate">{{ adminName }}</h2>
           </div>
           <router-link v-for="link in navLinks" :key="link.path" :to="link.path" @click="isMobileMenuOpen = false"
@@ -79,15 +79,19 @@
     </transition>
 
     <div v-if="isMobileMenuOpen || isAccountDropdownOpen"
-         class="fixed inset-0 bg-black/20 z-[40]"
+         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[40]"
          @click="isMobileMenuOpen = false; isAccountDropdownOpen = false"></div>
+
+    <main class="p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 max-w-7xl mx-auto min-h-[calc(100vh-80px)]">
+      <slot />
+    </main>
 
     <transition name="modal">
       <div v-if="showLogoutModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-slate-950/90 backdrop-blur-md" @click="showLogoutModal = false"></div>
-        <div class="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2rem] p-8 shadow-2xl">
+        <div class="relative w-full max-w-[320px] bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl">
           <div class="text-center">
-            <h3 class="text-xl font-black text-white mb-6 uppercase">Confirm Logout?</h3>
+            <h3 class="text-lg font-black text-white mb-6 uppercase italic">Confirm Logout?</h3>
             <div class="grid grid-cols-2 gap-3">
               <button @click="showLogoutModal = false" class="py-3 bg-slate-800 text-slate-300 font-bold rounded-xl text-[10px] uppercase">Cancel</button>
               <button @click="confirmLogout" class="py-3 bg-rose-600 text-white font-bold rounded-xl text-[10px] uppercase">Logout</button>
@@ -96,12 +100,22 @@
         </div>
       </div>
     </transition>
-
-    <main class="p-4 md:p-8 lg:p-12 max-w-[1400px] mx-auto min-h-[calc(100vh-80px)]">
-      <slot />
-    </main>
   </div>
 </template>
+
+<style scoped>
+.xs\:inline { display: none; }
+@media (min-width: 400px) { .xs\:inline { display: inline; } }
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-10px); }
+
+.slide-enter-active, .slide-leave-active { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.slide-enter-from, .slide-leave-to { transform: translateX(100%); }
+
+.modal-enter-active, .modal-leave-active { transition: all 0.3s ease; }
+.modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.9); }
+</style>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'

@@ -201,7 +201,6 @@ const handleFinalSave = async () => {
     localStorage.removeItem('stock_in_draft')
     stockList.value = []
     showConfirmModal.value = false
-    alert('Stock records saved successfully!')
 
   } catch (err) {
     console.error('Error saving records:', err.message)

@@ -1,16 +1,11 @@
 <template>
   <AdminLayout>
-    <div class="mb-8 px-2">
-      <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight uppercase italic">Dashboard Overview</h1>
-      <p class="text-slate-500 text-xs md:text-sm tracking-wide">Gadia Sari-Sari Store Management System</p>
-    </div>
-
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 px-2">
       <div class="bg-slate-900 p-5 md:p-6 rounded-3xl border border-slate-800 shadow-sm active:scale-95 md:hover:scale-[1.02] md:hover:border-violet-500/50 transition-all cursor-pointer group">
         <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Store Sales</p>
         <div class="flex items-end justify-between mb-4">
           <h2 class="text-xl md:text-2xl font-black text-white">{{ loading ? '...' : formatCurrency(stats.store_sales) }}</h2>
-          <span class="text-emerald-500 text-[10px] font-bold mb-1">+12% ↑</span>
+          <span class="text-emerald-500 text-[10px] font-bold mb-1">Sales</span>
         </div>
         <div class="pt-4 border-t border-slate-800/50">
           <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Total Capital Year</p>
@@ -30,7 +25,7 @@
         </div>
       </div>
 
-      <div class="bg-slate-900 p-5 md:p-6 rounded-3xl border border-slate-800 active:scale-95 md:hover:scale-[1.02] transition-all">
+      <div class="bg-slate-900 p-5 md:p-6 rounded-3xl border border-slate-800 active:scale-95 md:hover:scale-[1.02] transition-all md:hover:border-yellow-500/50 transition-all cursor-pointer">
         <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Total Stocks</p>
         <div class="flex items-end justify-between">
           <h2 class="text-xl md:text-2xl font-black text-white">{{ loading ? '...' : stats.total_stocks.toLocaleString() }}</h2>
@@ -41,7 +36,7 @@
         </div>
       </div>
 
-      <div class="bg-slate-900 p-5 md:p-6 rounded-3xl border border-slate-800 active:scale-95 md:hover:scale-[1.02] transition-all">
+      <div class="bg-slate-900 p-5 md:p-6 rounded-3xl border border-slate-800 active:scale-95 md:hover:scale-[1.02] transition-all md:hover:border-green-500/50 transition-all cursor-pointer">
         <div class="flex justify-between items-start mb-2">
            <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Lending</p>
            <div class="text-right">
@@ -111,20 +106,26 @@
         </div>
 
         <div class="overflow-x-auto pb-6 custom-scrollbar">
-          <div class="min-w-[700px]">
-            <div class="flex items-end justify-between h-48 space-x-3 px-2">
-              <div v-for="(item, i) in productTrend" :key="i"
-                   @click="activeTrend = i"
-                   class="flex-1 max-w-[45px] bg-gradient-to-t from-violet-600 to-indigo-500 rounded-t-lg transition-all active:brightness-150 cursor-pointer relative group/trend"
-                   :style="{ height: item.h + '%' }">
-                   <span :class="{'opacity-100 -top-10': activeTrend === i}"
-                         class="absolute -top-8 left-1/2 -translate-x-1/2 text-[9px] font-black text-white bg-slate-950 px-2 py-1 rounded border border-slate-800 opacity-0 md:group-hover/trend:opacity-100 transition-all whitespace-nowrap z-20 shadow-xl">
-                      {{ item.val }} Units
-                    </span>
+          <div class="min-w-[700px] flex items-end justify-between px-2 gap-2">
+
+            <div v-for="(item, i) in productTrend" :key="i"
+                class="flex-1 flex flex-col items-center group/trend relative">
+
+              <span :class="{'opacity-100 -top-10': activeTrend === i}"
+                    class="absolute -top-8 left-1/2 -translate-x-1/2 text-[9px] font-black text-white bg-slate-950 px-2 py-1 rounded border border-slate-800 opacity-0 md:group-hover/trend:opacity-100 transition-all whitespace-nowrap z-20 shadow-xl pointer-events-none">
+                {{ item.val }} Units
+              </span>
+
+              <div class="w-full h-48 flex items-end justify-center cursor-pointer" @click="activeTrend = i">
+                <div class="w-full max-w-[40px] bg-gradient-to-t from-violet-600 to-indigo-500 rounded-t-lg transition-all duration-500 active:brightness-150"
+                    :style="{ height: item.h + '%' }">
+                </div>
               </div>
-            </div>
-            <div class="flex justify-between mt-4 text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-              <span v-for="(item, i) in productTrend" :key="i" class="flex-1 text-center truncate px-1">{{ item.name }}</span>
+
+              <span class="mt-4 text-[9px] font-black text-slate-500 uppercase tracking-tighter text-center w-full truncate px-1">
+                {{ item.name }}
+              </span>
+
             </div>
           </div>
         </div>
