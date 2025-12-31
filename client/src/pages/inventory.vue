@@ -3,7 +3,7 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
       <div>
         <h1 class="text-3xl font-black text-white tracking-tight text-violet-500 italic uppercase">Inventory Management</h1>
-        <p class="text-slate-500 text-sm">Filter items by Category or Month</p>
+        <p class="text-slate-500 text-sm">Input sold units in the Deduct field to update stock</p>
       </div>
 
       <div class="relative group w-full md:w-96">
@@ -34,9 +34,7 @@
                   </select>
                 </div>
               </th>
-
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Description</th>
-
               <th class="px-6 py-4">
                 <div class="flex items-center space-x-2">
                   <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Category</span>
@@ -48,6 +46,9 @@
               </th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Quantity</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Type</th>
+
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">Deduct</th>
+
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">SRP</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Price</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
@@ -59,28 +60,42 @@
               <td class="px-6 py-4 text-xs text-slate-500 font-bold uppercase">{{ formatDate(item.date) }}</td>
               <td class="px-6 py-4 text-sm font-bold text-white">{{ item.description }}</td>
               <td class="px-6 py-4 text-xs font-bold text-slate-300 uppercase tracking-wide">{{ item.category }}</td>
+
               <td class="px-6 py-4 text-sm font-black text-slate-200">
-                <input v-if="item.isEditing" type="number" v-model="item.tempQty" class="w-20 bg-slate-950 border border-violet-500 rounded px-2 py-1 text-white focus:outline-none" />
-                <span v-else>{{ item.quantity }}</span>
+                {{ item.quantity }}
               </td>
+
               <td class="px-6 py-4">
                 <span class="text-[10px] font-black px-2 py-1 rounded bg-slate-800 text-slate-400 uppercase tracking-tighter border border-slate-700">
                   {{ item.type || 'N/A' }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-sm font-bold text-slate-400">₱{{ Number(item.srp).toFixed(2) }}</td>
 
+              <td class="px-6 py-4 text-sm font-black text-orange-400">
+                <input
+                  v-if="item.isEditing"
+                  type="number"
+                  v-model="item.tempDeduct"
+                  placeholder="0"
+                  class="w-20 bg-slate-950 border border-orange-500/50 rounded px-2 py-1 text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+                />
+                <span v-else class="text-slate-600 opacity-40">—</span>
+              </td>
+
+              <td class="px-6 py-4 text-sm font-bold text-slate-400">₱{{ Number(item.srp).toFixed(2) }}</td>
               <td class="px-6 py-4 text-sm font-black text-white">₱{{ Number(item.price).toFixed(2) }}</td>
+
               <td class="px-6 py-4">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="statusClasses(item.status)">
                   <span class="w-1.5 h-1.5 rounded-full mr-2" :class="statusBullet(item.status)"></span>
                   {{ item.status }}
                 </span>
               </td>
+
               <td class="px-6 py-4 text-center">
                 <div v-if="!item.isEditing" @click="startEdit(item)" class="inline-flex items-center text-violet-400 hover:text-violet-300 cursor-pointer transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                  <span class="text-[10px] font-black uppercase italic tracking-tighter">Edit Qty</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                  <span class="text-[10px] font-black uppercase italic tracking-tighter">Enter Sales</span>
                 </div>
                 <div v-else class="flex items-center justify-center space-x-2">
                   <button @click="saveEdit(item)" class="bg-emerald-600 hover:bg-emerald-500 text-white p-1.5 rounded-lg transition-all"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg></button>
@@ -104,13 +119,14 @@ const loading = ref(true)
 const inventoryItems = ref([])
 const searchQuery = ref('')
 const categoryFilter = ref('All')
-const monthFilter = ref('All') // NEW MONTH FILTER STATE
+const monthFilter = ref('All')
 
 const fetchInventory = async () => {
   try {
     const { data, error } = await supabase.from('inventory').select('*').order('date', { ascending: false })
     if (error) throw error
-    inventoryItems.value = data.map(item => ({ ...item, isEditing: false, tempQty: item.quantity }))
+    // Initializing tempDeduct to 0 for the input field
+    inventoryItems.value = data.map(item => ({ ...item, isEditing: false, tempDeduct: 0 }))
   } catch (err) {
     console.error('Error fetching inventory:', err.message)
   } finally {
@@ -118,7 +134,6 @@ const fetchInventory = async () => {
   }
 }
 
-// Subscribe to changes
 let inventoryChannel = null
 onMounted(() => {
   fetchInventory()
@@ -126,15 +141,15 @@ onMounted(() => {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, () => { fetchInventory() })
     .subscribe()
 })
+
 onUnmounted(() => { if (inventoryChannel) supabase.removeChannel(inventoryChannel) })
 
-// UNIQUE MONTHS GENERATOR
 const uniqueMonths = computed(() => {
   const months = inventoryItems.value.map(item => {
     const d = new Date(item.date)
     return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
   })
-  return [...new Set(months)].sort((a, b) => new Date(b) - new Date(a)) // Sort newest first
+  return [...new Set(months)].sort((a, b) => new Date(b) - new Date(a))
 })
 
 const uniqueCategories = computed(() => {
@@ -142,40 +157,53 @@ const uniqueCategories = computed(() => {
   return [...new Set(cats)]
 })
 
-// SEARCH AND MULTI-FILTER LOGIC
 const filteredItems = computed(() => {
   return inventoryItems.value.filter(item => {
-    // Month Matching
     const itemDate = new Date(item.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     const matchesMonth = monthFilter.value === 'All' || itemDate === monthFilter.value
-
-    // Category Matching
     const matchesCategory = categoryFilter.value === 'All' || item.category === categoryFilter.value
-
-    // Search Matching
     const matchesSearch = item.description.toLowerCase().includes(searchQuery.value.toLowerCase())
-
     return matchesMonth && matchesCategory && matchesSearch
   })
 })
 
 const startEdit = (item) => {
-  item.tempQty = item.quantity
+  item.tempDeduct = 0 // Clear field for fresh input
   item.isEditing = true
 }
 
 const saveEdit = async (item) => {
-  const updatedQty = item.tempQty === '' || item.tempQty === null ? 0 : Number(item.tempQty)
-  let newStatus = updatedQty <= 0 ? 'Out of Stock' : (updatedQty <= 20 ? 'Low Stock' : 'In Stock')
+  const deductVal = Number(item.tempDeduct) || 0
+
+  if (deductVal <= 0) {
+    item.isEditing = false
+    return
+  }
+
+  // 1. Accumulate the total deducted units for sales calculations
+  const totalDeducted = (item.deduct || 0) + deductVal
+  // 2. Subtract from current quantity
+  const newQuantity = Math.max(0, (item.quantity || 0) - deductVal)
+
+  let newStatus = newQuantity <= 0 ? 'Out of Stock' : (newQuantity <= 20 ? 'Low Stock' : 'In Stock')
 
   try {
-    const { error } = await supabase.from('inventory').update({ quantity: updatedQty, status: newStatus }).eq('id', item.id)
+    const { error } = await supabase.from('inventory').update({
+      quantity: newQuantity,
+      deduct: totalDeducted, // Total sales volume
+      status: newStatus
+    }).eq('id', item.id)
+
     if (error) throw error
-    item.quantity = updatedQty
+
+    // Update Local State
+    item.quantity = newQuantity
+    item.deduct = totalDeducted
+    item.tempDeduct = 0 // Input disappears/resets
     item.status = newStatus
     item.isEditing = false
   } catch (err) {
-    alert('Error updating quantity')
+    alert('Error updating stock')
   }
 }
 
