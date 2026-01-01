@@ -3,7 +3,7 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
       <div>
         <h1 class="text-3xl font-black text-white tracking-tight italic uppercase text-amber-500">Lending List</h1>
-        <p class="text-slate-500 text-sm">Update deductions and track balances</p>
+        <p class="text-slate-500 text-sm">Listahan ng mga Utang sa Tindahan</p>
       </div>
 
       <div class="flex flex-col md:flex-row gap-4 items-center">
@@ -43,7 +43,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800">
-            <tr v-for="(loan, i) in filteredRecords" :key="i" class="hover:bg-slate-800/20 transition-colors">
+            <tr v-for="(loan, i) in filteredRecords" :key="loan.id || i" class="hover:bg-slate-800/20 transition-colors">
 
               <td class="px-3 py-3">
                 <input type="datetime-local" v-model="loan.datetime" :disabled="loan.isLocked" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-2 text-[10px] text-white w-full disabled:opacity-80" />
@@ -96,9 +96,17 @@
               </td>
 
               <td class="px-3 py-3 text-center">
-                <span :class="loan.status === 'Paid' ? 'text-emerald-500' : 'text-amber-500'" class="text-[10px] font-black uppercase">
-                  {{ loan.status }}
-                </span>
+                <div class="flex flex-col items-center justify-center gap-1">
+                  <span :class="loan.status === 'Paid' ? 'text-emerald-500' : 'text-amber-500'" class="text-[10px] font-black uppercase">
+                    {{ loan.status }}
+                  </span>
+                  <button @click="openNoteModal(loan)" class="hover:scale-110 transition-transform" :class="loan.notes ? 'text-amber-400' : 'text-slate-600'">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                      <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
               </td>
 
               <td class="px-3 py-3 text-center">
@@ -138,6 +146,33 @@
         </div>
       </div>
     </div>
+
+    <div v-if="noteModal.show" class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
+      <div class="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] max-w-md w-full shadow-2xl">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="p-3 bg-amber-500/10 rounded-2xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-lg font-black text-white uppercase tracking-tight italic">Record Notes</h2>
+            <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Borrower: {{ noteModal.activeLoan?.name || 'New Record' }}</p>
+          </div>
+        </div>
+
+        <textarea
+          v-model="noteModal.tempNote"
+          placeholder="Type important notes here (e.g., 'Will pay on Friday', 'Promised extra interest')..."
+          class="w-full h-40 bg-slate-950 border border-slate-800 rounded-2xl p-4 text-slate-200 text-sm focus:outline-none focus:border-amber-500/50 transition-all resize-none mb-6"
+        ></textarea>
+
+        <div class="flex gap-3">
+          <button @click="closeNoteModal" class="flex-1 py-3 bg-slate-800 text-slate-400 rounded-xl font-bold uppercase text-[10px]">Discard</button>
+          <button @click="saveNote" class="flex-1 py-3 bg-amber-600 text-white rounded-xl font-black uppercase text-[10px] shadow-lg shadow-amber-600/20">Save Note</button>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
@@ -150,13 +185,30 @@ const lendingRecords = ref([])
 const showModal = ref(false)
 const searchQuery = ref('')
 
-// --- SEARCH FILTER LOGIC ---
-const filteredRecords = computed(() => {
-  if (!searchQuery.value) return lendingRecords.value
+// Note Modal State
+const noteModal = ref({
+  show: false,
+  activeLoan: null,
+  tempNote: ''
+})
 
-  return lendingRecords.value.filter(record =>
-    record.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+// --- SEARCH FILTER & SORTING LOGIC ---
+const filteredRecords = computed(() => {
+  let records = [...lendingRecords.value]
+
+  // 1. Filter by Search Query
+  if (searchQuery.value) {
+    records = records.filter(record =>
+      record.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
+  }
+
+  // 2. Sort by Status (Partial/Active first, then Pending/Paid)
+  // Logic: Partial (0), Active (1), Pending (2), Paid (3)
+  return records.sort((a, b) => {
+    const priority = { 'Partial': 0, 'Active': 1, 'Pending': 2, 'Paid': 3 }
+    return priority[a.status] - priority[b.status]
+  })
 })
 
 const fetchRecords = async () => {
@@ -182,6 +234,7 @@ const fetchRecords = async () => {
       interest: item.interest,
       deductValue: 0,
       status: item.status,
+      notes: item.notes || '', // Ensure notes are fetched
       isLocked: true,
       flash: false
     }
@@ -211,9 +264,41 @@ const addLendingRow = () => {
     interest: 0,
     deductValue: 0,
     status: 'Pending',
+    notes: '',
     isLocked: false,
     flash: false
   })
+}
+
+// NOTE MODAL ACTIONS
+const openNoteModal = (loan) => {
+  noteModal.value.activeLoan = loan
+  noteModal.value.tempNote = loan.notes || ''
+  noteModal.value.show = true
+}
+
+const closeNoteModal = () => {
+  noteModal.value.show = false
+  noteModal.value.activeLoan = null
+}
+
+const saveNote = async () => {
+  const loan = noteModal.value.activeLoan
+  if (!loan) return
+
+  loan.notes = noteModal.value.tempNote
+
+  // If the record already exists in DB, update it immediately
+  if (loan.id) {
+    const { error } = await supabase
+      .from('lending_list')
+      .update({ notes: loan.notes })
+      .eq('id', loan.id)
+
+    if (error) console.error("Error saving note:", error.message)
+  }
+
+  closeNoteModal()
 }
 
 const calculateInterest = (loan) => {
@@ -249,7 +334,8 @@ const confirmAll = async () => {
           contract: `${r.durationValue} ${r.durationUnit}`,
           interest: originalInterest,
           deduct: 0,
-          status: 'Active'
+          status: 'Active',
+          notes: r.notes || ''
         }])
         .select()
 
@@ -265,7 +351,7 @@ const confirmAll = async () => {
 }
 
 const saveAndDeduct = async (loan) => {
-  if (loan.status === 'Paid') return // Guard clause
+  if (loan.status === 'Paid') return
 
   const toDeduct = Number(loan.deductValue) || 0
 

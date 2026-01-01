@@ -29,7 +29,7 @@
         <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Total Stocks</p>
         <div class="flex items-end justify-between">
           <h2 class="text-xl md:text-2xl font-black text-white">{{ loading ? '...' : stats.total_stocks.toLocaleString() }}</h2>
-          <span class="text-amber-500 text-[10px] font-bold mb-1">Live</span>
+          <span class="text-amber-500 text-[10px] font-bold mb-1">Level</span>
         </div>
         <div class="mt-5 h-2 w-full bg-slate-800 rounded-full overflow-hidden">
           <div class="h-full transition-all duration-1000" :class="stockProgress.color" :style="{ width: stockProgress.width }"></div>
@@ -40,7 +40,7 @@
         <div class="flex justify-between items-start mb-2">
            <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Lending</p>
            <div class="text-right">
-             <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest text-emerald-400">Int: {{ loading ? '...' : formatCurrency(stats.lending_sales) }}</p>
+             <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest text-emerald-400">Interest Accomulate: {{ loading ? '...' : formatCurrency(stats.lending_sales) }}</p>
            </div>
         </div>
         <div class="flex items-center space-x-4 mb-4">
@@ -49,7 +49,7 @@
           <div><p class="text-[9px] text-slate-500 font-bold uppercase">Unpaid</p><p class="text-lg font-black text-rose-500">{{ stats.unpaid_count }}</p></div>
         </div>
         <div class="pt-4 border-t border-slate-800/50">
-          <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest text-rose-400">Total Acc: {{ formatCurrency(stats.total_accumulate) }}</p>
+          <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest text-rose-400">Total Capital: {{ formatCurrency(stats.total_accumulate) }}</p>
         </div>
       </div>
     </div>

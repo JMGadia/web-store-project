@@ -10,7 +10,7 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
       <div>
         <h1 class="text-3xl font-black text-white tracking-tight italic uppercase">GCash & ATM</h1>
-        <p class="text-slate-500 text-sm">Real-time Balance & Capital Management</p>
+        <p class="text-slate-500 text-sm">Pang Track ng Kita sa GCash at ATM at Listahan</p>
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
