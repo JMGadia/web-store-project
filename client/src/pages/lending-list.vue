@@ -130,9 +130,12 @@
       </div>
 
       <div v-if="hasUnlocked" class="p-6 bg-slate-800/30 border-t border-slate-800 flex justify-end">
-        <button @click="validateAndShowModal" class="bg-amber-600 hover:bg-amber-500 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all">
-          Confirm Records
-        </button>
+        <button
+        @click="validateAndShowModal"
+        :disabled="processingConfirm"
+        class="disabled:opacity-50 ...">
+        {{ processingConfirm ? 'Saving...' : 'Confirm Records' }}
+      </button>
       </div>
     </div>
 
@@ -142,7 +145,12 @@
         <p class="text-slate-400 text-xs mb-8">Confirmed records will be saved to the database and <span class="text-rose-400">cannot be deleted</span>.</p>
         <div class="flex gap-4">
           <button @click="showModal = false" class="flex-1 py-3 bg-slate-800 text-slate-300 rounded-xl font-bold uppercase text-[10px]">Cancel</button>
-          <button @click="confirmAll" class="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-black uppercase text-[10px]">Confirm</button>
+         <button
+          @click="confirmAll"
+          :disabled="processingConfirm"
+          class="disabled:opacity-50 ...">
+          {{ processingConfirm ? 'Processing...' : 'Confirm' }}
+        </button>
         </div>
       </div>
     </div>
@@ -184,6 +192,7 @@ import { supabase } from '../supabaseClient.js'
 const lendingRecords = ref([])
 const showModal = ref(false)
 const searchQuery = ref('')
+const processingConfirm = ref(false) // New loading state
 
 // Note Modal State
 const noteModal = ref({
@@ -196,15 +205,12 @@ const noteModal = ref({
 const filteredRecords = computed(() => {
   let records = [...lendingRecords.value]
 
-  // 1. Filter by Search Query
   if (searchQuery.value) {
     records = records.filter(record =>
       record.name.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
 
-  // 2. Sort by Status (Partial/Active first, then Pending/Paid)
-  // Logic: Partial (0), Active (1), Pending (2), Paid (3)
   return records.sort((a, b) => {
     const priority = { 'Partial': 0, 'Active': 1, 'Pending': 2, 'Paid': 3 }
     return priority[a.status] - priority[b.status]
@@ -234,7 +240,7 @@ const fetchRecords = async () => {
       interest: item.interest,
       deductValue: 0,
       status: item.status,
-      notes: item.notes || '', // Ensure notes are fetched
+      notes: item.notes || '',
       isLocked: true,
       flash: false
     }
@@ -270,7 +276,6 @@ const addLendingRow = () => {
   })
 }
 
-// NOTE MODAL ACTIONS
 const openNoteModal = (loan) => {
   noteModal.value.activeLoan = loan
   noteModal.value.tempNote = loan.notes || ''
@@ -288,7 +293,6 @@ const saveNote = async () => {
 
   loan.notes = noteModal.value.tempNote
 
-  // If the record already exists in DB, update it immediately
   if (loan.id) {
     const { error } = await supabase
       .from('lending_list')
@@ -318,36 +322,48 @@ const validateAndShowModal = () => {
 }
 
 const confirmAll = async () => {
-  for (let r of lendingRecords.value) {
-    if (!r.isLocked) {
-      const originalInterest = Number(r.interest)
-      const totalToBorrow = parseFloat((Number(r.amount) + originalInterest).toFixed(2))
-      const [date, time] = r.datetime.split('T')
+  if (processingConfirm.value) return // Guard against double clicks
 
-      const { data, error } = await supabase
-        .from('lending_list')
-        .insert([{
-          transaction_date: date,
-          transaction_time: time,
-          name: r.name,
-          borrowed_money: totalToBorrow,
-          contract: `${r.durationValue} ${r.durationUnit}`,
-          interest: originalInterest,
-          deduct: 0,
-          status: 'Active',
-          notes: r.notes || ''
-        }])
-        .select()
+  processingConfirm.value = true
 
-      if (!error) {
-        r.id = data[0].id
-        r.amount = totalToBorrow
-        r.status = 'Active'
-        r.isLocked = true
+  try {
+    for (let r of lendingRecords.value) {
+      if (!r.isLocked) {
+        const originalInterest = Number(r.interest)
+        const totalToBorrow = parseFloat((Number(r.amount) + originalInterest).toFixed(2))
+        const [date, time] = r.datetime.split('T')
+
+        const { data, error } = await supabase
+          .from('lending_list')
+          .insert([{
+            transaction_date: date,
+            transaction_time: time,
+            name: r.name,
+            borrowed_money: totalToBorrow,
+            contract: `${r.durationValue} ${r.durationUnit}`,
+            interest: originalInterest,
+            deduct: 0,
+            status: 'Active',
+            notes: r.notes || ''
+          }])
+          .select()
+
+        if (!error && data.length > 0) {
+          r.id = data[0].id
+          r.amount = totalToBorrow
+          r.status = 'Active'
+          r.isLocked = true
+        } else if (error) {
+          console.error("Insert error:", error.message)
+        }
       }
     }
+    showModal.value = false
+  } catch (err) {
+    console.error("Confirmation process failed:", err)
+  } finally {
+    processingConfirm.value = false
   }
-  showModal.value = false
 }
 
 const saveAndDeduct = async (loan) => {
