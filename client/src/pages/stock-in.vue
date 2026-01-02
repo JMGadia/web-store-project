@@ -141,7 +141,7 @@ watch(stockList, (newList) => {
 }, { deep: true })
 
 const grandTotalCapital = computed(() => {
-  return stockList.value.reduce((sum, item) => sum + (Number(item.price) * Number(item.qty)), 0)
+  return stockList.value.reduce((sum, item) => sum + (Number(item.srp) * Number(item.qty)), 0)
 })
 
 const totalItemsCount = computed(() => {
