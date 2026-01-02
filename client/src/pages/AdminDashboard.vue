@@ -39,9 +39,6 @@
       <div class="bg-slate-900 p-5 md:p-6 rounded-3xl border border-slate-800 active:scale-95 md:hover:scale-[1.02] transition-all md:hover:border-green-500/50 transition-all cursor-pointer">
         <div class="flex justify-between items-start mb-2">
            <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Lending</p>
-           <div class="text-right">
-             <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest text-emerald-400">Interest Accomulate: {{ loading ? '...' : formatCurrency(stats.lending_sales) }}</p>
-           </div>
         </div>
         <div class="flex items-center space-x-4 mb-4">
           <div><p class="text-[9px] text-slate-500 font-bold uppercase">Paid</p><p class="text-lg font-black text-emerald-500">{{ stats.paid_count }}</p></div>
@@ -49,7 +46,7 @@
           <div><p class="text-[9px] text-slate-500 font-bold uppercase">Unpaid</p><p class="text-lg font-black text-rose-500">{{ stats.unpaid_count }}</p></div>
         </div>
         <div class="pt-4 border-t border-slate-800/50">
-          <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest text-rose-400">Total Capital: {{ formatCurrency(stats.total_accumulate) }}</p>
+          <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest text-rose-400">Total Interest: {{ formatCurrency(stats.total_accumulate) }}</p>
         </div>
       </div>
     </div>
