@@ -135,6 +135,7 @@
 </template>
 
 <script setup>
+//To commit
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { supabase } from '../supabaseClient.js'
 import AdminLayout from '../pages/components/AdminLayout.vue'
