@@ -126,7 +126,7 @@ import { supabase } from '../supabaseClient.js'
 import AdminLayout from '../pages/components/AdminLayout.vue'
 
 const showConfirmModal = ref(false)
-const isSaving = ref(false)
+const isSaving = ref(false) // This acts as our security lock
 const stockList = ref([])
 
 onMounted(() => {
@@ -148,12 +148,13 @@ const totalItemsCount = computed(() => {
   return stockList.value.reduce((sum, item) => sum + (Number(item.qty) || 0), 0)
 })
 
+// UPDATED: Now uses unshift to put new rows at the TOP
 const addBlankRow = () => {
-  stockList.value.push({
+  stockList.value.unshift({
     date: new Date().toISOString().substr(0, 10),
     description: '',
     category: '',
-    type: '', // Added Type field
+    type: '',
     qty: 0,
     srp: 0,
     price: 0
@@ -163,7 +164,9 @@ const addBlankRow = () => {
 const removeItem = (index) => stockList.value.splice(index, 1)
 
 const handleFinalSave = async () => {
-  if (stockList.value.length === 0) return
+  // Security Check: If already saving or list is empty, stop.
+  if (isSaving.value || stockList.value.length === 0) return
+
   isSaving.value = true
 
   try {
@@ -172,7 +175,7 @@ const handleFinalSave = async () => {
       date: item.date,
       description: item.description,
       category: item.category,
-      type: item.type, // Saving to stock_in table
+      type: item.type,
       quantity: Number(item.qty),
       srp: Number(item.srp),
       store_price: Number(item.price)
@@ -183,7 +186,7 @@ const handleFinalSave = async () => {
       date: item.date,
       description: item.description,
       category: item.category,
-      type: item.type, // Saving to inventory table
+      type: item.type,
       quantity: Number(item.qty),
       srp: Number(item.srp),
       price: Number(item.price),
@@ -198,6 +201,7 @@ const handleFinalSave = async () => {
     const { error: invError } = await supabase.from('inventory').insert(inventoryEntries)
     if (invError) throw invError
 
+    // Success: Clear everything
     localStorage.removeItem('stock_in_draft')
     stockList.value = []
     showConfirmModal.value = false
@@ -206,6 +210,7 @@ const handleFinalSave = async () => {
     console.error('Error saving records:', err.message)
     alert('Error: ' + err.message)
   } finally {
+    // SECURITY: Unlock the button even if it fails
     isSaving.value = false
   }
 }
