@@ -16,15 +16,15 @@
       </div>
     </div>
 
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl relative">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl relative overflow-hidden">
       <div v-if="loading" class="p-20 flex justify-center items-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500"></div>
       </div>
 
-      <div v-else class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-slate-800/50 border-b border-slate-800">
+      <div v-else class="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar">
+        <table class="w-full text-left border-collapse min-w-[1100px]">
+          <thead class="sticky top-0 z-10 bg-slate-900 shadow-sm">
+            <tr class="bg-slate-800/80 border-b border-slate-700 backdrop-blur-md">
               <th class="px-6 py-4">
                 <div class="flex items-center space-x-2">
                   <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Date</span>
@@ -46,9 +46,7 @@
               </th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Quantity</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Type</th>
-
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">Deduct</th>
-
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">SRP</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Price</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
@@ -57,43 +55,29 @@
           </thead>
           <tbody class="divide-y divide-slate-800">
             <tr v-for="item in filteredItems" :key="item.id" class="hover:bg-slate-800/30 transition-colors group">
-              <td class="px-6 py-4 text-xs text-slate-500 font-bold uppercase">{{ formatDate(item.date) }}</td>
+              <td class="px-6 py-4 text-xs text-slate-500 font-bold uppercase whitespace-nowrap">{{ formatDate(item.date) }}</td>
               <td class="px-6 py-4 text-sm font-bold text-white">{{ item.description }}</td>
-              <td class="px-6 py-4 text-xs font-bold text-slate-300 uppercase tracking-wide">{{ item.category }}</td>
-
-              <td class="px-6 py-4 text-sm font-black text-slate-200">
-                {{ item.quantity }}
-              </td>
-
+              <td class="px-6 py-4 text-xs font-bold text-slate-300 uppercase tracking-wide">{{ cleanCategory(item.category) }}</td>
+              <td class="px-6 py-4 text-sm font-black text-slate-200">{{ item.quantity }}</td>
               <td class="px-6 py-4">
                 <span class="text-[10px] font-black px-2 py-1 rounded bg-slate-800 text-slate-400 uppercase tracking-tighter border border-slate-700">
                   {{ item.type || 'N/A' }}
                 </span>
               </td>
-
               <td class="px-6 py-4 text-sm font-black text-orange-400">
-                <input
-                  v-if="item.isEditing"
-                  type="number"
-                  v-model="item.tempDeduct"
-                  placeholder="0"
-                  class="w-20 bg-slate-950 border border-orange-500/50 rounded px-2 py-1 text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
-                />
+                <input v-if="item.isEditing" type="number" v-model="item.tempDeduct" placeholder="0" class="w-20 bg-slate-950 border border-orange-500/50 rounded px-2 py-1 text-white focus:outline-none focus:ring-1 focus:ring-orange-500" />
                 <span v-else class="text-slate-600 opacity-40">—</span>
               </td>
-
               <td class="px-6 py-4 text-sm font-bold text-slate-400">₱{{ Number(item.srp).toFixed(2) }}</td>
               <td class="px-6 py-4 text-sm font-black text-white">₱{{ Number(item.price).toFixed(2) }}</td>
-
               <td class="px-6 py-4">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="statusClasses(item.status)">
                   <span class="w-1.5 h-1.5 rounded-full mr-2" :class="statusBullet(item.status)"></span>
                   {{ item.status }}
                 </span>
               </td>
-
               <td class="px-6 py-4 text-center">
-                <div v-if="!item.isEditing" @click="startEdit(item)" class="inline-flex items-center text-violet-400 hover:text-violet-300 cursor-pointer transition-colors">
+                <div v-if="!item.isEditing" @click="startEdit(item)" class="inline-flex items-center text-violet-400 hover:text-violet-300 cursor-pointer transition-colors whitespace-nowrap">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                   <span class="text-[10px] font-black uppercase italic tracking-tighter">Enter Sales</span>
                 </div>
@@ -121,12 +105,44 @@ const searchQuery = ref('')
 const categoryFilter = ref('All')
 const monthFilter = ref('All')
 
+// HELPER: Merge duplicate names/spaces in categories
+const cleanCategory = (cat) => {
+  if (!cat) return 'UNCATEGORIZED'
+  return cat.trim().replace(/\s+/g, ' ').toUpperCase()
+}
+
 const fetchInventory = async () => {
   try {
     const { data, error } = await supabase.from('inventory').select('*').order('date', { ascending: false })
     if (error) throw error
-    // Initializing tempDeduct to 0 for the input field
-    inventoryItems.value = data.map(item => ({ ...item, isEditing: false, tempDeduct: 0 }))
+
+    // LOGIC: Delete Out of Stock duplicates if a newer entry for the same item exists
+    const seenDescriptions = new Set()
+    const finalData = []
+    const idsToDelete = []
+
+    // Since data is ordered by date DESC, we see newer items first
+    for (const item of data) {
+      const desc = item.description.trim().toLowerCase()
+
+      if (seenDescriptions.has(desc)) {
+        // If we've seen this item already (newer exists) and this one is Out of Stock, delete it
+        if (item.status === 'Out of Stock' || item.quantity <= 0) {
+          idsToDelete.push(item.id)
+          continue // Skip adding to the list
+        }
+      }
+
+      seenDescriptions.add(desc)
+      finalData.push({ ...item, isEditing: false, tempDeduct: 0 })
+    }
+
+    // Perform cleanup in DB if duplicates found
+    if (idsToDelete.length > 0) {
+      await supabase.from('inventory').delete().in('id', idsToDelete)
+    }
+
+    inventoryItems.value = finalData
   } catch (err) {
     console.error('Error fetching inventory:', err.message)
   } finally {
@@ -153,7 +169,7 @@ const uniqueMonths = computed(() => {
 })
 
 const uniqueCategories = computed(() => {
-  const cats = inventoryItems.value.map(i => i.category)
+  const cats = inventoryItems.value.map(i => cleanCategory(i.category))
   return [...new Set(cats)]
 })
 
@@ -161,45 +177,40 @@ const filteredItems = computed(() => {
   return inventoryItems.value.filter(item => {
     const itemDate = new Date(item.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     const matchesMonth = monthFilter.value === 'All' || itemDate === monthFilter.value
-    const matchesCategory = categoryFilter.value === 'All' || item.category === categoryFilter.value
+    const matchesCategory = categoryFilter.value === 'All' || cleanCategory(item.category) === categoryFilter.value
     const matchesSearch = item.description.toLowerCase().includes(searchQuery.value.toLowerCase())
     return matchesMonth && matchesCategory && matchesSearch
   })
 })
 
 const startEdit = (item) => {
-  item.tempDeduct = 0 // Clear field for fresh input
+  item.tempDeduct = 0
   item.isEditing = true
 }
 
 const saveEdit = async (item) => {
   const deductVal = Number(item.tempDeduct) || 0
-
   if (deductVal <= 0) {
     item.isEditing = false
     return
   }
 
-  // 1. Accumulate the total deducted units for sales calculations
   const totalDeducted = (item.deduct || 0) + deductVal
-  // 2. Subtract from current quantity
   const newQuantity = Math.max(0, (item.quantity || 0) - deductVal)
-
   let newStatus = newQuantity <= 0 ? 'Out of Stock' : (newQuantity <= 20 ? 'Low Stock' : 'In Stock')
 
   try {
     const { error } = await supabase.from('inventory').update({
       quantity: newQuantity,
-      deduct: totalDeducted, // Total sales volume
+      deduct: totalDeducted,
       status: newStatus
     }).eq('id', item.id)
 
     if (error) throw error
 
-    // Update Local State
     item.quantity = newQuantity
     item.deduct = totalDeducted
-    item.tempDeduct = 0 // Input disappears/resets
+    item.tempDeduct = 0
     item.status = newStatus
     item.isEditing = false
   } catch (err) {
