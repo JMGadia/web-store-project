@@ -1,16 +1,36 @@
 <template>
-  <div class="min-h-screen bg-slate-950 text-slate-100 font-sans">
-    <nav class="bg-slate-900 border-b border-emerald-500/20 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-700 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+  <div class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500/30">
+    <nav class="bg-slate-900 border-b border-emerald-500/20 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-[60] shadow-xl">
+
+      <div class="flex items-center space-x-4">
+        <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="md:hidden p-2 text-slate-400 hover:text-emerald-500 transition-colors">
+          <svg v-if="!isMobileMenuOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10m-10 6h16" />
           </svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-700 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+          </div>
+          <div class="hidden xs:block">
+            <span class="text-xl font-black text-white tracking-tight uppercase">Gadia<span class="text-emerald-500 italic">POS</span></span>
+            <p class="text-[9px] text-emerald-500/70 font-bold tracking-[0.2em] uppercase leading-none">Terminal Access</p>
+          </div>
         </div>
-        <div>
-          <span class="text-xl font-black text-white tracking-tight uppercase">Gadia<span class="text-emerald-500 italic">POS</span></span>
-          <p class="text-[9px] text-emerald-500/70 font-bold tracking-[0.2em] uppercase leading-none">Terminal Access</p>
-        </div>
+      </div>
+
+      <div class="hidden md:flex items-center space-x-1 lg:space-x-4 bg-slate-950/50 p-1.5 rounded-2xl border border-slate-800">
+        <router-link v-for="link in navLinks" :key="link.path" :to="link.path"
+          class="px-4 py-2 text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all rounded-xl"
+          active-class="bg-emerald-600/10 text-emerald-400 shadow-sm border border-emerald-500/20">
+          {{ link.name }}
+        </router-link>
       </div>
 
       <div class="relative group">
@@ -23,7 +43,7 @@
           </svg>
         </button>
 
-        <div class="absolute right-0 mt-3 w-64 bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-800 py-6 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all transform origin-top-right scale-95 group-hover:scale-100 z-[60]">
+        <div class="absolute right-0 mt-3 w-64 bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-800 py-6 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all transform origin-top-right scale-95 group-hover:scale-100 z-[70]">
           <div class="px-6 pb-4 border-b border-slate-800 text-center">
             <div class="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-3 border border-emerald-500/20">
                <span class="text-2xl font-black text-emerald-500 uppercase">{{ adminName.charAt(0) }}</span>
@@ -32,7 +52,6 @@
             <p class="text-lg font-black text-white truncate">{{ adminName }}</p>
             <p class="text-xs text-slate-400 truncate">{{ adminEmail }}</p>
           </div>
-
           <div class="mt-4 px-3">
             <button @click="showLogoutModal = true" class="w-full flex items-center justify-center space-x-3 px-4 py-3 text-rose-400 hover:bg-rose-500/10 rounded-2xl transition-all group/btn">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover/btn:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -45,27 +64,46 @@
       </div>
     </nav>
 
+    <transition name="slide">
+      <div v-if="isMobileMenuOpen" class="fixed inset-y-0 left-0 w-[280px] bg-slate-900 border-r border-slate-800 z-[70] md:hidden flex flex-col shadow-2xl">
+        <div class="p-8">
+            <span class="text-xl font-black text-white tracking-tight uppercase">Gadia<span class="text-emerald-500 italic">POS</span></span>
+        </div>
+        <nav class="flex-1 px-4 space-y-2">
+            <router-link v-for="link in navLinks" :key="link.path" :to="link.path" @click="isMobileMenuOpen = false"
+                class="flex items-center px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-400 transition-all"
+                active-class="bg-emerald-600 text-white shadow-lg shadow-emerald-600/20">
+                {{ link.name }}
+            </router-link>
+        </nav>
+        <div class="p-4 border-t border-slate-800">
+            <button @click="showLogoutModal = true; isMobileMenuOpen = false" class="w-full py-4 text-rose-500 font-black text-xs uppercase tracking-widest">Sign Out</button>
+        </div>
+      </div>
+    </transition>
+
+    <div v-if="isMobileMenuOpen" @click="isMobileMenuOpen = false" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[65] md:hidden"></div>
+
     <transition name="modal">
       <div v-if="showLogoutModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-slate-950/90 backdrop-blur-md" @click="showLogoutModal = false"></div>
         <div class="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-2xl p-8 text-center">
-          <div class="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
           </div>
           <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-tight">Exit Terminal?</h3>
-          <p class="text-slate-400 text-sm mb-8 leading-relaxed">This will end your current session. Make sure all sales are finalized.</p>
-
+          <p class="text-slate-400 text-sm mb-8 leading-relaxed">This will end your current session.</p>
           <div class="grid grid-cols-2 gap-3">
-            <button @click="showLogoutModal = false" class="py-4 bg-slate-800 text-slate-400 font-bold rounded-2xl text-[10px] uppercase tracking-widest hover:bg-slate-700 transition-colors">Cancel</button>
-            <button @click="confirmLogout" class="py-4 bg-rose-600 text-white font-bold rounded-2xl text-[10px] uppercase tracking-widest shadow-lg shadow-rose-600/30">Confirm</button>
+            <button @click="showLogoutModal = false" class="py-4 bg-slate-800 text-slate-400 font-bold rounded-2xl text-[10px] uppercase tracking-widest hover:bg-slate-700">Cancel</button>
+            <button @click="confirmLogout" class="py-4 bg-rose-600 text-white font-bold rounded-2xl text-[10px] uppercase tracking-widest">Confirm</button>
           </div>
         </div>
       </div>
     </transition>
 
-    <main class="p-6 md:p-8 max-w-7xl mx-auto">
+    <main class="p-4 md:p-8 max-w-7xl mx-auto min-h-[calc(100vh-80px)]">
       <slot />
     </main>
   </div>
@@ -79,8 +117,14 @@ const router = useRouter();
 const adminName = ref('User');
 const adminEmail = ref('');
 const showLogoutModal = ref(false);
+const isMobileMenuOpen = ref(false);
 
-// Catch Browser Back Button
+const navLinks = [
+  { name: 'Dashboard', path: '/user-dashboard' },
+  { name: 'Expenses', path: '/expenses' },
+  { name: 'Debt Tracker', path: '/debt-tracker' }
+];
+
 const handleBackButton = () => {
   if (!showLogoutModal.value) {
     showLogoutModal.value = true;
@@ -95,7 +139,6 @@ onMounted(() => {
     adminName.value = userData.username || 'User';
     adminEmail.value = userData.email || '';
   }
-
   window.addEventListener('popstate', handleBackButton);
   history.pushState(null, null, window.location.pathname);
 });
@@ -112,6 +155,15 @@ const confirmLogout = () => {
 </script>
 
 <style scoped>
+/* Responsive brand hiding for very small screens */
+@media (max-width: 350px) {
+  .xs\:block { display: none; }
+}
+
+/* Animations */
+.slide-enter-active, .slide-leave-active { transition: transform 0.3s ease; }
+.slide-enter-from, .slide-leave-to { transform: translateX(-100%); }
+
 .modal-enter-active, .modal-leave-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.9) translateY(20px); }
 </style>
